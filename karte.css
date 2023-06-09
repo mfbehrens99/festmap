@@ -1,0 +1,13 @@
+.item-add-control {
+  background: #fff;
+  padding: 5px;
+  width: 30%; /* Set a width if needed */
+  display: block; /* Make the buttons appear below each other */
+}
+
+.export-control {
+  background: #fff;
+  padding: 5px;
+  width: 19%; /* Set a width if needed */
+  display: block; /* Make the buttons appear below each other */
+}
