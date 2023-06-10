@@ -105,42 +105,40 @@ class ObjectManager {
 	};
 
 	select(index) {
+		this.deselect();
+
+		var old_rect = this.getSelected();
+		if (old_rect != null) {
+			old_rect.polygon.setStyle({color: old_rect.color});
+		}
+		infoBox.getContainer().style.display = "none";
+	
 		if (index < -1 || index >= this.rects.length) {
 			// Out of index
 			return;
-		} else if (index == -1) {
-			// Select nothing
-			infoBox.getContainer().style.display = "none";
-		} else {
-			// Select Rect
-			infoBox.getContainer().style.display = "block";
-			
-	
-			var rect = this.rects[index];
-			document.getElementById("info_text").value = rect.text;
-			document.getElementById("info_xSize").value = rect.xSize;
-			document.getElementById("info_ySize").value = rect.ySize;
-			// document.getElementById("info_category").value = rect.category;
-			document.getElementById("info_color").value = rect.color;
 		}
-	
-		for (let j = 0; j < this.rects.length; ++j) {
-			if (this.rects[j] == null) {
-				continue;
-			}
-			this.rects[j].polygon.setStyle({color: index == j ? 'green' : this.rects[j].color});
-			
-			// if (index == j) {
-			// 	rects[j].polygon.dragging.enable();
-			// } else {
-			// 	rects[j].polygon.dragging.disable()
-			// }
-		}
+
 		this.selected = index;
+		var rect = this.getSelected();
+
+		// Handle infobox
+		infoBox.getContainer().style.display = "block";
+		document.getElementById("info_text").value = rect.text;
+		document.getElementById("info_xSize").value = rect.xSize;
+		document.getElementById("info_ySize").value = rect.ySize;
+		// document.getElementById("info_category").value = rect.category;
+		document.getElementById("info_color").value = rect.color;
+
+		rect.polygon.setStyle({color: "green"});
 	};
 
 	deselect() {
-		this.select(-1);
+		var rect = this.getSelected();
+		if (rect != null) {
+			rect.polygon.setStyle({color: rect.color});
+		}
+		// Hide infobox
+		infoBox.getContainer().style.display = "none";
 	};
 
 	getSelected() {
@@ -163,6 +161,7 @@ class ObjectManager {
 		data.forEach((r) => {
 			this.addRect(new Rectangle(r.lat, r.lng, r.width, r.height, r.rotation, r.color, r.name, r.category));
 		});
+		this.deselect();
 	};
 	
 	exportRects() {
@@ -547,5 +546,3 @@ if (memoryJSON != null) {
 
 
 objects.addRects(data);
-
-objects.deselect();
