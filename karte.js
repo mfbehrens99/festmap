@@ -1,21 +1,4 @@
-const map = L.map('map').setView([49.02000, 8.42317], 20);
-
-const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-	maxZoom: 22,
-	maxNativeZoom: 19,
-	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-}).addTo(map);
-
-const googleSat = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
-	maxZoom: 22,
-	subdomains:['mt0','mt1','mt2','mt3']
-}).addTo(map);
-
-var baseMaps = {
-	"Google satellite": googleSat,
-	"OpenStreetMap": osm,
-};
-
+// Utils
 function rotate(x, y, r) {
 	r *= Math.PI / 180.0;
 	return [
@@ -24,6 +7,15 @@ function rotate(x, y, r) {
 	];
 }
 
+function calculateRotationAngle(latlngPivot, latlngMouse) {
+	// var center = rect.polygon.getBounds().getCenter();
+	var dx = latlngMouse.lng - latlngPivot.lng;
+	var dy = latlngMouse.lat - latlngPivot.lat;
+	return Math.atan2(dx, dy) * (180 / Math.PI);
+}
+
+
+// Map Items
 class Rectangle {
 	constructor(latPos, lngPos, xSize, ySize, rotation, color, text, category) {
 		this.latPos = latPos;
@@ -46,12 +38,11 @@ class Rectangle {
 
 		const rectObj = this;
 		this.polygon.on('dragend', function(e) {
+			// Update the rectangle object whenever the polygon has been moved
 			var center = this.getBounds().getCenter();
-			// rectObj.marker.setLatLng(center);
 			rectObj.latPos = center.lat;
 			rectObj.lngPos = center.lng;
 			rectObj.update();
-			// rectObj.updatePosition();
 		  });
 		this.update();
 	}
@@ -91,17 +82,33 @@ class Rectangle {
 	}
 }
 
+
+// Setup Map
+const map = L.map('map').setView([49.02000, 8.42317], 20);
+
+
+// Add Background imagery
+const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	maxZoom: 22,
+	maxNativeZoom: 19,
+	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(map);
+
+const googleSat = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+	maxZoom: 22,
+	subdomains:['mt0','mt1','mt2','mt3']
+}).addTo(map);
+
+var baseMaps = {
+	"Google satellite": googleSat,
+	"OpenStreetMap": osm,
+};
+
+
+// Setup the Categories
 let categoryLayers = {};
 var layerControl = L.control.layers(baseMaps, categoryLayers).addTo(map);
 
-function addRectToCategoryLayer(rect) {
-	if (!(rect.category in categoryLayers)) {
-		categoryLayers[rect.category] = L.layerGroup();
-		layerControl.addOverlay(categoryLayers[rect.category], rect.category);
-		categoryLayers[rect.category].addTo(map);
-	}
-	rect.addTo(categoryLayers[rect.category]);
-}
 
 let nextRectNumber = 0;
 let rects = [];
@@ -150,6 +157,21 @@ function addRect(rect) {
 	});
 }
 
+function addRectToCategoryLayer(rect) {
+	if (!(rect.category in categoryLayers)) {
+		categoryLayers[rect.category] = L.layerGroup();
+		layerControl.addOverlay(categoryLayers[rect.category], rect.category);
+		categoryLayers[rect.category].addTo(map);
+	}
+	rect.addTo(categoryLayers[rect.category]);
+}
+
+function addRects(data) {
+	data.forEach((e) => {
+		addRect(new Rectangle(e.lat, e.lng, e.width, e.height, e.rotation, e.color, e.name, e.category));
+	});
+}
+
 function clearRects() {
 	for(const [_key, layer] of Object.entries(categoryLayers)) {
 		map.removeLayer(layer);
@@ -159,65 +181,58 @@ function clearRects() {
 	rects = [];
 }
 
-let data = [];
-var memoryJSON = JSON.parse(localStorage.getItem("jsondata"));
-if (memoryJSON != null) {
-	if (confirm("Möchtest du deine letzten Kartendaten wiederherstellen?")) {
-		data = memoryJSON;
-	}
+function exportRects(rects) {
+	let data = [];
+	rects.forEach((rect) => {
+		data.push({
+			name: rect.text,
+			width: rect.xSize,
+			height: rect.ySize,
+			lat: rect.latPos,
+			lng: rect.lngPos,
+			rotation: rect.rotation,
+			color: rect.color,
+			category: rect.category,
+		});
+	});
+	return JSON.stringify(data, null, '\t');
 }
 
 
-data.forEach((e) => {
-	addRect(new Rectangle(e.lat, e.lng, e.width, e.height, e.rotation, e.color, e.name, e.category));
-});
-
-let dragging = false;
-let rotating = false;
-let ctrl = false;
-let startLng = 0;
+// Object Rotation
 let startRot = 0;
-let latDiff = 0;
-let lngDiff = 0;
-let copyRect = {};
 
 map.on('mousedown', function(e) {
+	// console.log(e);
 	if (selected < 0) {
 		return;
 	}
-	latDiff = e.latlng.lat - rects[selected].latPos;
-	lngDiff = e.latlng.lng - rects[selected].lngPos;
-	startLng = e.latlng.lng;
-	startRot = rects[selected].rotation;
-	dragging = true;
-	rotating = ctrl;
-});
+	startRot = rects[selected].rotation - calculateRotationAngle(rects[selected].polygon.getBounds().getCenter(), e.latlng);
 
-map.on('mouseup', function(e) {
-	dragging = false;
+	revertRects = exportRects(rects);
 });
 
 map.on('mousemove', function(e) {
-	if (dragging) {
-		if (rotating) {
-			rects[selected].rotation = (startRot + (startLng - e.latlng.lng) * 100000.0) % 360.0; 
-		} else {
-			rects[selected].latPos = e.latlng.lat - latDiff;
-			rects[selected].lngPos = e.latlng.lng - lngDiff;
-		}
+	if (selected < 0) {
+		return;
+	}
+	if (e.originalEvent.buttons == 2) {
+		rects[selected].rotation = (startRot + calculateRotationAngle(rects[selected].polygon.getBounds().getCenter(), e.latlng)) % 360.0; 
 		rects[selected].update();
 	}
 });
 
+
+// Hotkeys
+let copyRect = null;
+let revertRects = null;
+
 map.on('keydown', function(e) {
 	var key = e.originalEvent.key;
-	if (key === "Control") {
-		ctrl = true;
-	}
 	if (key === "Escape") {
 		selectRect(-1);
 	}
-	if (key === "c" && ctrl && selected != -1) {
+	else if (key === "c" && e.originalEvent.ctrlKey && selected != -1) {
 		// Copy
 		var rect = rects[selected];
 		copyRect = {
@@ -229,24 +244,22 @@ map.on('keydown', function(e) {
 			category: rect.category,
 		};
 	}
-	if (key === "v" && ctrl && copyRect != {}) {
+	else if (key === "v" && e.originalEvent.ctrlKey && copyRect != null) {
 		// Paste
 		let center = map.getCenter();
 		addRect(new Rectangle(center.lat, center.lng, copyRect.xSize, copyRect.ySize, copyRect.rotation, copyRect.color, copyRect.text, copyRect.category));
 		selectRect(nextRectNumber - 1);
-
 	}
-	if (key === "Delete" && selected != -1) {
+	else if (key === "z" && e.originalEvent.ctrlKey && revertRects != null) {
+		// Revert
+		clearRects();
+		addRects(JSON.parse(revertRects));
+	}
+	else if (key === "Delete" && selected != -1) {
 		// Delete
 		rects[selected].delete();
 		rects.splice(selected, 1);
 		selectRect(-1);
-	}
-});
-
-map.on('keyup', function(e) {
-	if (e.originalEvent.key === "Control") {
-		ctrl = false;
 	}
 });
 
@@ -350,13 +363,6 @@ let items = [
 		"category": "Tische",
 	},
 	{
-		"name": "Stuhl",
-		"width": 0.2,
-		"height": 0.2,
-		"color": "#add8e6",
-		"category": "Tische",
-	},
-	{
 		"name": "Sofa",
 		"width": 2.5,
 		"height": 1.0,
@@ -418,20 +424,7 @@ L.Control.ExportControl = L.Control.extend({
 		btn_export.appendChild(t_export);
 
 		btn_export.addEventListener("click", (event) => {
-			let data = [];
-			rects.forEach((rect) => {
-				data.push({
-					name: rect.text,
-					width: rect.xSize,
-					height: rect.ySize,
-					lat: rect.latPos,
-					lng: rect.lngPos,
-					rotation: rect.rotation,
-					color: rect.color,
-					category: rect.category,
-				});
-			});
-			var json = JSON.stringify(data, null, '\t');
+			var json = exportRects(rects);
 			window.open("data:text/json;charset=utf-8," + encodeURIComponent(json), "", "_blank")
 		});
 
@@ -510,5 +503,16 @@ function infoBoxUpdateRect(){
 	rect.color = document.getElementById("info_color").value;
 	rect.update();
 }
+
+let data = [];
+var memoryJSON = JSON.parse(localStorage.getItem("jsondata"));
+if (memoryJSON != null) {
+	if (confirm("Möchtest du deine letzten Kartendaten wiederherstellen?")) {
+		data = memoryJSON;
+	}
+}
+
+
+addRects(data);
 
 selectRect(-1);
