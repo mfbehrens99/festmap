@@ -34,7 +34,7 @@ class Rectangle {
 		this.color = color;
 		this.text = text;
 		this.category = category;
-		this.polygon = L.polygon([[0.0,0.0], [0.0,0.0], [0.0,0.0], [0.0,0.0]], {color: color});
+		this.polygon = L.polygon([[0.0,0.0], [0.0,0.0], [0.0,0.0], [0.0,0.0]], {color: color, draggable: true});
 		// this.marker = new L.marker([0.0, 0.0], { opacity: 1.0 });
 		this.polygon.bindTooltip(text, {
 			//permanent: true,
@@ -86,12 +86,9 @@ class Rectangle {
 		// this.marker.setLatLng([this.latPos, this.lngPos]);
 	}
 
-	// updatePosition() {
-	// 	var center = this.polygon.getCenter()
-	// 	this.latPos = center.lat;
-	// 	this.lngPos = center.lng;
-	// 	this.update();
-	// }
+	delete() {
+		this.polygon.removeFrom(categoryLayers[this.category]);
+	}
 }
 
 let categoryLayers = {};
@@ -133,11 +130,11 @@ function selectRect(index) {
 	for (let j = 0; j < rects.length; ++j) {
 		rects[j].polygon.setStyle({color: index == j ? 'green' : rects[j].color});
 		
-		if (index == j) {
-			rects[j].polygon.dragging.enable();
-		} else {
-			rects[j].polygon.dragging.disable()
-		}
+		// if (index == j) {
+		// 	rects[j].polygon.dragging.enable();
+		// } else {
+		// 	rects[j].polygon.dragging.disable()
+		// }
 	}
 	selected = index;
 }
@@ -241,8 +238,9 @@ map.on('keydown', function(e) {
 	}
 	if (key === "Delete" && selected != -1) {
 		// Delete
-		var rect = rects[selectRect];
-
+		rects[selected].delete();
+		rects.splice(selected, 1);
+		selectRect(-1);
 	}
 });
 
