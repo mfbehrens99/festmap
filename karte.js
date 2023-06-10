@@ -83,6 +83,151 @@ class Rectangle {
 }
 
 
+class ObjectManager {
+	constructor(layerControl, categoryLayers) {
+		this.rects = [];
+		this.selected = -1;
+		this.copyRect = {}
+	};
+
+	addRect(rect) {
+		rect.update();
+		this.rects.push(rect);
+		this.addRectToCategoryLayer(rect);
+
+		// Setup select rect handler
+		const objMan = this;
+		const i = this.rects.length - 1;
+		rect.polygon.on('click', function(e) {
+			objMan.select(i);
+		});
+		this.select(i);
+	};
+
+	select(index) {
+		if (index < -1 || index >= this.rects.length) {
+			// Out of index
+			return;
+		} else if (index == -1) {
+			// Select nothing
+			infoBox.getContainer().style.display = "none";
+		} else {
+			// Select Rect
+			infoBox.getContainer().style.display = "block";
+			
+	
+			var rect = this.rects[index];
+			document.getElementById("info_text").value = rect.text;
+			document.getElementById("info_xSize").value = rect.xSize;
+			document.getElementById("info_ySize").value = rect.ySize;
+			// document.getElementById("info_category").value = rect.category;
+			document.getElementById("info_color").value = rect.color;
+		}
+	
+		for (let j = 0; j < this.rects.length; ++j) {
+			if (this.rects[j] == null) {
+				continue;
+			}
+			this.rects[j].polygon.setStyle({color: index == j ? 'green' : this.rects[j].color});
+			
+			// if (index == j) {
+			// 	rects[j].polygon.dragging.enable();
+			// } else {
+			// 	rects[j].polygon.dragging.disable()
+			// }
+		}
+		this.selected = index;
+	};
+
+	deselect() {
+		this.select(-1);
+	};
+
+	getSelected() {
+		if (this.selected == -1) {
+			return null;
+		}
+		return this.rects[this.selected];
+	};
+
+	addRectToCategoryLayer(rect) {
+		if (!(rect.category in categoryLayers)) {
+			categoryLayers[rect.category] = L.layerGroup();
+			layerControl.addOverlay(categoryLayers[rect.category], rect.category);
+			categoryLayers[rect.category].addTo(map);
+		}
+		rect.addTo(categoryLayers[rect.category]);
+	};
+
+	addRects(data) {
+		data.forEach((r) => {
+			this.addRect(new Rectangle(r.lat, r.lng, r.width, r.height, r.rotation, r.color, r.name, r.category));
+		});
+	};
+	
+	exportRects() {
+		let data = [];
+		this.rects.forEach((rect) => {
+			if (rect == null) {
+				return;
+			}
+			data.push({
+				name: rect.text,
+				width: rect.xSize,
+				height: rect.ySize,
+				lat: rect.latPos,
+				lng: rect.lngPos,
+				rotation: rect.rotation,
+				color: rect.color,
+				category: rect.category,
+			});
+		});
+		return JSON.stringify(data, null, '\t');
+	};
+
+	deleteRect(id) {
+		var rect = this.rects[id];
+		rect.polygon.removeFrom(categoryLayers[rect.category]);
+		delete this.rects[id];
+		if (this.selected == id){
+			this.deselect();
+		}
+	}
+
+	clearRects() {
+		for(const [_key, layer] of Object.entries(this.categoryLayers)) {
+			map.removeLayer(layer);
+			this.layerControl.removeLayer(layer);
+		}
+		categoryLayers = {};
+		rects = [];
+	};
+
+	copy() {
+		var rect = this.getSelected();
+		if (rect == null) {
+			return;
+		}
+
+		this.copyRect = {
+			xSize: rect.xSize,
+			ySize: rect.ySize,
+			rotation: rect.rotation,
+			color: rect.color,
+			text: rect.text,
+			category: rect.category,
+		};
+	}
+
+	paste(pos) {
+		if (this.copyRect == null) {
+			return;
+		}
+		objects.addRect(new Rectangle(pos.lat, pos.lng, this.copyRect.xSize, this.copyRect.ySize, this.copyRect.rotation, this.copyRect.color, this.copyRect.text, this.copyRect.category));
+	}
+}
+
+
 // Setup Map
 const map = L.map('map').setView([49.02000, 8.42317], 20);
 
@@ -110,156 +255,61 @@ let categoryLayers = {};
 var layerControl = L.control.layers(baseMaps, categoryLayers).addTo(map);
 
 
-let nextRectNumber = 0;
-let rects = [];
-let selected = -1;
+let objects = new ObjectManager(layerControl, categoryLayers);
 
-function selectRect(index) {
-	if (index < -1 || index >= rects.length) {
-		// Out of index
-		return;
-	} else if (index == -1) {
-		// Select nothing
-		infoBox.getContainer().style.display = "none";
-	} else {
-		// Select Rect
-		infoBox.getContainer().style.display = "block";
-		
-
-		var rect = rects[index];
-		document.getElementById("info_text").value = rect.text;
-		document.getElementById("info_xSize").value = rect.xSize;
-		document.getElementById("info_ySize").value = rect.ySize;
-		// document.getElementById("info_category").value = rect.category;
-		document.getElementById("info_color").value = rect.color;
-	}
-
-	for (let j = 0; j < rects.length; ++j) {
-		rects[j].polygon.setStyle({color: index == j ? 'green' : rects[j].color});
-		
-		// if (index == j) {
-		// 	rects[j].polygon.dragging.enable();
-		// } else {
-		// 	rects[j].polygon.dragging.disable()
-		// }
-	}
-	selected = index;
-}
-
-function addRect(rect) {
-	rect.update();
-	rects.push(rect);
-	addRectToCategoryLayer(rect);
-	const i = nextRectNumber;
-	nextRectNumber++;
-	rect.polygon.on('click', function(e) {
-		selectRect(i);
-	});
-}
-
-function addRectToCategoryLayer(rect) {
-	if (!(rect.category in categoryLayers)) {
-		categoryLayers[rect.category] = L.layerGroup();
-		layerControl.addOverlay(categoryLayers[rect.category], rect.category);
-		categoryLayers[rect.category].addTo(map);
-	}
-	rect.addTo(categoryLayers[rect.category]);
-}
-
-function addRects(data) {
-	data.forEach((e) => {
-		addRect(new Rectangle(e.lat, e.lng, e.width, e.height, e.rotation, e.color, e.name, e.category));
-	});
-}
-
-function clearRects() {
-	for(const [_key, layer] of Object.entries(categoryLayers)) {
-		map.removeLayer(layer);
-		layerControl.removeLayer(layer);
-	}
-	categoryLayers = {};
-	rects = [];
-}
-
-function exportRects(rects) {
-	let data = [];
-	rects.forEach((rect) => {
-		data.push({
-			name: rect.text,
-			width: rect.xSize,
-			height: rect.ySize,
-			lat: rect.latPos,
-			lng: rect.lngPos,
-			rotation: rect.rotation,
-			color: rect.color,
-			category: rect.category,
-		});
-	});
-	return JSON.stringify(data, null, '\t');
-}
 
 
 // Object Rotation
 let startRot = 0;
 
 map.on('mousedown', function(e) {
-	// console.log(e);
-	if (selected < 0) {
+	var selected = objects.getSelected();
+	if (selected == null) {
 		return;
 	}
-	startRot = rects[selected].rotation - calculateRotationAngle(rects[selected].polygon.getBounds().getCenter(), e.latlng);
+	startRot = selected.rotation - calculateRotationAngle(selected.polygon.getBounds().getCenter(), e.latlng);
 
-	revertRects = exportRects(rects);
+	// Ctrl+Z function for Rotation
+	revertRects = objects.exportRects();
 });
 
 map.on('mousemove', function(e) {
-	if (selected < 0) {
+	var selected = objects.getSelected();
+	if (selected == null) {
 		return;
 	}
 	if (e.originalEvent.buttons == 2) {
-		rects[selected].rotation = (startRot + calculateRotationAngle(rects[selected].polygon.getBounds().getCenter(), e.latlng)) % 360.0; 
-		rects[selected].update();
+		selected.rotation = (startRot + calculateRotationAngle(selected.polygon.getBounds().getCenter(), e.latlng)) % 360.0; 
+		selected.update();
 	}
 });
 
 
 // Hotkeys
-let copyRect = null;
 let revertRects = null;
 
 map.on('keydown', function(e) {
 	var key = e.originalEvent.key;
 	if (key === "Escape") {
-		selectRect(-1);
+		objects.deselect();
 	}
-	else if (key === "c" && e.originalEvent.ctrlKey && selected != -1) {
+	else if (key === "c" && e.originalEvent.ctrlKey) {
 		// Copy
-		var rect = rects[selected];
-		copyRect = {
-			xSize: rect.xSize,
-			ySize: rect.ySize,
-			rotation: rect.rotation,
-			color: rect.color,
-			text: rect.text,
-			category: rect.category,
-		};
+		objects.copy();
 	}
-	else if (key === "v" && e.originalEvent.ctrlKey && copyRect != null) {
+	else if (key === "v" && e.originalEvent.ctrlKey) {
 		// Paste
-		let center = map.getCenter();
-		addRect(new Rectangle(center.lat, center.lng, copyRect.xSize, copyRect.ySize, copyRect.rotation, copyRect.color, copyRect.text, copyRect.category));
-		selectRect(nextRectNumber - 1);
+		let position = map.getCenter();
+		objects.paste(position);
 	}
 	else if (key === "z" && e.originalEvent.ctrlKey && revertRects != null) {
 		// Revert
-		clearRects();
-		addRects(JSON.parse(revertRects));
+		objects.clearRects();
+		objects.addRects(JSON.parse(revertRects));
 	}
-	else if (key === "Delete" && selected != -1) {
+	else if (key === "Delete" && objects.getSelected() != null) {
 		// Delete
-		rects[selected].delete();
-		rects.splice(selected, 1);
-		selectRect(-1);
+		objects.deleteRect(objects.selected)
 	}
 });
 
@@ -268,42 +318,42 @@ let items = [
 		"name": "6x12m Zelt (HaDiKo)",
 		"width": 12,
 		"height": 6,
-		"color": "white",
+		"color": "#ffffff",
 		"category": "Zelte",
 	},
 	{
 		"name": "5x10m Zelt (K2-Bar)",
 		"width": 10,
 		"height": 5,
-		"color": "white",
+		"color": "#ffffff",
 		"category": "Zelte",
 	},
 	{
 		"name": "3x3m Pavillon",
 		"width": 3,
 		"height": 3,
-		"color": "white",
+		"color": "#ffffff",
 		"category": "Zelte",
 	},
 	{
 		"name": "Doppel-Pavillon",
 		"width": 6,
 		"height": 3,
-		"color": "white",
+		"color": "#ffffff",
 		"category": "Zelte",
 	},
 	{
 		"name": "Rothaus-Bierinsel",
 		"width": 7.5,
 		"height": 7.5,
-		"color": "yellow",
+		"color": "#FFFF00",
 		"category": "Wagen",
 	},
 	{
 		"name": "Biertisch",
 		"width": 2,
 		"height": 0.5,
-		"color": "orange",
+		"color": "#ffa500",
 		"category": "Biergarnituren",
 	},
 	{
@@ -317,14 +367,14 @@ let items = [
 		"name": "Bierbank",
 		"width": 2,
 		"height": 0.25,
-		"color": "orange",
+		"color": "#ffa500",
 		"category": "Biergarnituren",
 	},
 	{
 		"name": "Biertheke",
 		"width": 2,
 		"height": 0.5,
-		"color": "red",
+		"color": "#ff0000",
 		"category": "Biergarnituren",
 	},
 	{
@@ -352,21 +402,21 @@ let items = [
 		"name": "Bauzaun",
 		"width": 3.5,
 		"height": 0.04,
-		"color": "gray",
+		"color": "#808080",
 		"category": "Abgrenzungen",
 	},
 	{
 		"name": "1x2m Tisch",
 		"width": 2.0,
 		"height": 1.0,
-		"color": "blue",
+		"color": "#0000FF",
 		"category": "Tische",
 	},
 	{
 		"name": "Sofa",
 		"width": 2.5,
 		"height": 1.0,
-		"color": "brown",
+		"color": "#a52a2a",
 		"category": "Sofas",
 	},
 ];
@@ -388,8 +438,7 @@ L.Control.ItemAddControl = L.Control.extend({
 			btn.appendChild(t);
 			btn.addEventListener("click", (event) => {
 				let center = map.getCenter();
-				addRect(new Rectangle(center.lat, center.lng, width, height, 0.0, color, name, category));
-				selectRect(rects.length - 1);
+				objects.addRect(new Rectangle(center.lat, center.lng, width, height, 0.0, color, name, category));
 			});
 		}
 
@@ -412,11 +461,8 @@ L.Control.ExportControl = L.Control.extend({
 		btn_import.addEventListener("click", (event) => {
 			var data = JSON.parse(prompt("Exportierte JSON eingeben!"));
 
-			clearRects();
-
-			data.forEach((e) => {
-				addRect(new Rectangle(e.lat, e.lng, e.width, e.height, e.rotation, e.color, e.name, e.category));
-			});
+			objects.clearRects();
+			objects.addRects(data)
 		});
 
 		let btn_export = L.DomUtil.create('button', '', el);
@@ -424,7 +470,7 @@ L.Control.ExportControl = L.Control.extend({
 		btn_export.appendChild(t_export);
 
 		btn_export.addEventListener("click", (event) => {
-			var json = exportRects(rects);
+			var json = objects.exportRects();
 			window.open("data:text/json;charset=utf-8," + encodeURIComponent(json), "", "_blank")
 		});
 
@@ -495,7 +541,7 @@ let exportJson = new L.Control.ExportControl({position: 'topright'}).addTo(map);
 let infoBox = new L.Control.InfoControl({position: 'bottomleft'}).addTo(map);
 
 function infoBoxUpdateRect(){
-	var rect = rects[selected];
+	var rect = objects.getSelected();
 	rect.text = document.getElementById("info_text").value;
 	rect.xSize = document.getElementById("info_xSize").value;
 	rect.ySize = document.getElementById("info_ySize").value;
@@ -513,6 +559,6 @@ if (memoryJSON != null) {
 }
 
 
-addRects(data);
+objects.addRects(data);
 
-selectRect(-1);
+objects.deselect();
