@@ -195,12 +195,12 @@ class ObjectManager {
 	}
 
 	clearRects() {
-		for(const [_key, layer] of Object.entries(this.categoryLayers)) {
+		for(const [_key, layer] of Object.entries(categoryLayers)) {
 			map.removeLayer(layer);
-			this.layerControl.removeLayer(layer);
+			layerControl.removeLayer(layer);
 		}
 		categoryLayers = {};
-		rects = [];
+		this.rects = [];
 	};
 
 	copy() {
@@ -479,20 +479,7 @@ L.Control.ExportControl = L.Control.extend({
 		btn_save.appendChild(t);
 
 		btn_save.addEventListener("click", (event) => {
-			let data = [];
-			rects.forEach((rect) => {
-				data.push({
-					name: rect.text,
-					width: rect.xSize,
-					height: rect.ySize,
-					lat: rect.latPos,
-					lng: rect.lngPos,
-					rotation: rect.rotation,
-					color: rect.color,
-					category: rect.category,
-				});
-			});
-			var json = JSON.stringify(data, null, '');
+			var json = objects.exportRects();
 			localStorage.setItem("jsondata", json);
 		});
 
