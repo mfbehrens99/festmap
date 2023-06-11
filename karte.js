@@ -37,6 +37,9 @@ class Rectangle {
 		});
 
 		const rectObj = this;
+		this.polygon.on('dragstart', function(e) {
+			objects.addRevertStep();
+		});
 		this.polygon.on('dragend', function(e) {
 			// Update the rectangle object whenever the polygon has been moved
 			var center = this.getBounds().getCenter();
@@ -87,7 +90,9 @@ class ObjectManager {
 	constructor(layerControl, categoryLayers) {
 		this.rects = [];
 		this.selected = -1;
-		this.copyRect = {}
+		this.copyRect = {};
+		this.revertSteps = [];
+		this.revertIndex = -1;
 	};
 
 	addRect(rect) {
@@ -139,6 +144,7 @@ class ObjectManager {
 		}
 		// Hide infobox
 		infoBox.getContainer().style.display = "none";
+		this.selected = -1;
 	};
 
 	getSelected() {
@@ -164,7 +170,7 @@ class ObjectManager {
 		this.deselect();
 	};
 	
-	exportRects() {
+	exportRects(sep='\t') {
 		let data = [];
 		this.rects.forEach((rect) => {
 			if (rect == null) {
@@ -181,7 +187,7 @@ class ObjectManager {
 				category: rect.category,
 			});
 		});
-		return JSON.stringify(data, null, '\t');
+		return JSON.stringify(data, null, sep);
 	};
 
 	deleteRect(id) {
@@ -216,13 +222,37 @@ class ObjectManager {
 			text: rect.text,
 			category: rect.category,
 		};
-	}
+	};
 
 	paste(pos) {
 		if (this.copyRect == null) {
 			return;
 		}
 		objects.addRect(new Rectangle(pos.lat, pos.lng, this.copyRect.xSize, this.copyRect.ySize, this.copyRect.rotation, this.copyRect.color, this.copyRect.text, this.copyRect.category));
+	};
+
+	addRevertStep() {
+		if (this.revertIndex > -1) {
+			this.revertSteps.splice(this.revertSteps.length - this.revertIndex - 1);
+			this.revertIndex = -1;
+		}
+		this.revertSteps.push(objects.exportRects(''));
+		// Maybe limit stack size by calling this.revertSteps.shift() once a certain size has been exceeded
+	};
+
+	revert() {
+		if (this.revertSteps.length - this.revertIndex - 1 < 1) {
+			return;
+		}
+		if (this.revertIndex == -1) {
+			this.addRevertStep();
+			this.revertIndex = 0;
+		}
+		this.revertIndex++;
+		this.clearRects();
+		this.addRects(JSON.parse(this.revertSteps[this.revertSteps.length - this.revertIndex - 1]));
+	}
+
 	}
 }
 
@@ -266,10 +296,11 @@ map.on('mousedown', function(e) {
 	if (selected == null) {
 		return;
 	}
+	if (e.originalEvent.button == 2) {
+		// Ctrl+Z function for Rotation
+		objects.addRevertStep();
+	}
 	startRot = selected.rotation - calculateRotationAngle(selected.polygon.getBounds().getCenter(), e.latlng);
-
-	// Ctrl+Z function for Rotation
-	revertRects = objects.exportRects();
 });
 
 map.on('mousemove', function(e) {
@@ -282,6 +313,18 @@ map.on('mousemove', function(e) {
 		selected.update();
 	}
 });
+
+map.on('mouseup', function(e) {
+	if (e.originalEvent.button == 2) {
+		if (objects.getSelected() != null) {
+			
+		}
+	}
+});
+
+map.on('preclick', function(e) {
+	objects.deselect(); // UGLY
+})
 
 
 // Hotkeys
@@ -298,16 +341,21 @@ map.on('keydown', function(e) {
 	}
 	else if (key === "v" && e.originalEvent.ctrlKey) {
 		// Paste
+		objects.addRevertStep();
 		let position = map.getCenter();
 		objects.paste(position);
 	}
-	else if (key === "z" && e.originalEvent.ctrlKey && revertRects != null) {
+	else if (key === "z" && e.originalEvent.ctrlKey) {
 		// Revert
-		objects.clearRects();
-		objects.addRects(JSON.parse(revertRects));
+		objects.revert();
+	}
+	else if (key === "y" && e.originalEvent.ctrlKey) {
+		// Repeat
+		objects.repeat();
 	}
 	else if (key === "Delete" && objects.getSelected() != null) {
 		// Delete
+		objects.addRevertStep();
 		objects.deleteRect(objects.selected)
 	}
 });
@@ -509,7 +557,7 @@ L.Control.InfoControl = L.Control.extend({
 			</tr> -->
 			<tr>
 				<td>Farbe:</td>
-				<td><input type="color" id="info_color" onchange="infoBoxUpdateRect()" /></td>
+				<td><input type="color" id="info_color" onchange="infoBoxUpdateRect()" /> <input type="submit" onclick="objects.deselect()" value="Schließen" /></td>
 			</tr>
 		</table>
 	  `;
@@ -528,7 +576,12 @@ let infoBox = new L.Control.InfoControl({position: 'bottomleft'}).addTo(map);
 
 function infoBoxUpdateRect(){
 	var rect = objects.getSelected();
+	if (rect == null) {
+		// That should not happen
+		return;
+	}
 	rect.text = document.getElementById("info_text").value;
+	rect.polygon.getTooltip().setContent(document.getElementById("info_text").value);
 	rect.xSize = document.getElementById("info_xSize").value;
 	rect.ySize = document.getElementById("info_ySize").value;
 	// rect.category = document.getElementById("info_category").value;
