@@ -44,10 +44,10 @@ class MapItem {
 		});
 
 		const mapItem = this;
-		this.leafletItem.on('dragstart', function(e) {
+		this.leafletItem.on('dragstart', function (e) {
 			objects.addRevertStep();
 		});
-		this.leafletItem.on('dragend', function(e) {
+		this.leafletItem.on('dragend', function (e) {
 			// Update the item whenever the polygon has been moved
 			var center = this.getBounds().getCenter();
 			mapItem.lat = center.lat;
@@ -62,7 +62,7 @@ class MapItem {
 		this.leafletItem.getTooltip().setContent(this.name);
 	};
 
-	delete() {};
+	delete() { };
 
 	toJSON() {
 		return {
@@ -85,7 +85,7 @@ class MapItem {
 		var input_name = document.createElement('input');
 		input_name.id = "info_name";
 		input_name.value = this.name;
-		input_name.onchange = function() {
+		input_name.onchange = function () {
 			mapItem.name = this.value;
 			mapItem.update();
 		}
@@ -101,7 +101,7 @@ class MapItem {
 		input_color.id = "info_name";
 		input_color.type = "color";
 		input_color.value = this.color;
-		input_color.onchange = function() {
+		input_color.onchange = function () {
 			mapItem.color = this.value;
 			mapItem.update();
 		}
@@ -122,7 +122,7 @@ class Rectangle extends MapItem {
 		this.ySize = data.ySize;
 		this.rotation = data.rotation;
 
-		this.leafletItem = L.polygon([[0.0,0.0], [0.0,0.0], [0.0,0.0], [0.0,0.0]], {color: data.color, draggable: true});
+		this.leafletItem = L.polygon([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]], { color: data.color, draggable: true });
 	}
 
 	update() {
@@ -137,7 +137,7 @@ class Rectangle extends MapItem {
 			rotate(this.xSize, -this.ySize, this.rotation),
 			rotate(-this.xSize, -this.ySize, this.rotation),
 		];
-		
+
 		for (let i = 0; i < 4; ++i) {
 			points[i][0] /= 2.0 * latLenght;
 			points[i][1] /= 2.0 * lngLenght;
@@ -173,7 +173,7 @@ class Rectangle extends MapItem {
 		input_xSize.type = "number";
 		input_xSize.size = "6"
 		input_xSize.value = this.xSize;
-		input_xSize.onchange = function() {
+		input_xSize.onchange = function () {
 			mapItem.xSize = this.value;
 			mapItem.update();
 		}
@@ -181,7 +181,7 @@ class Rectangle extends MapItem {
 		input_ySize.type = "number";
 		input_ySize.size = "6"
 		input_ySize.value = this.ySize;
-		input_ySize.onchange = function() {
+		input_ySize.onchange = function () {
 			mapItem.ySize = this.value;
 			mapItem.update();
 		}
@@ -203,7 +203,7 @@ class Circle extends MapItem {
 		this.radius = data.radius;
 
 
-		this.leafletItem = L.circle([0.0,0.0], {radius: this.radius, color: data.color, draggable: true});
+		this.leafletItem = L.circle([0.0, 0.0], { radius: this.radius, color: data.color, draggable: true });
 	};
 
 	update() {
@@ -234,7 +234,7 @@ class Circle extends MapItem {
 		var input_radius = document.createElement('input');
 		input_radius.type = "number";
 		input_radius.value = this.radius;
-		input_radius.onchange = function() {
+		input_radius.onchange = function () {
 			mapItem.radius = this.value;
 			mapItem.update();
 		}
@@ -257,7 +257,7 @@ class ObjectManager {
 	addItem(itemData) {
 		// Create a Item from itemData
 		var item;
-		switch(itemData.type) {
+		switch (itemData.type) {
 			case "Rectangle":
 				item = new Rectangle(itemData);
 				break;
@@ -276,10 +276,10 @@ class ObjectManager {
 		// Setup select select click handler
 		const objectManager = this;
 		const i = this.items.length - 1;
-		item.leafletItem.on('click', function(e) {
+		item.leafletItem.on('click', function (e) {
 			objectManager.select(i);
 		});
-		
+
 		// Create new category layer if it does not already exist
 		if (!(item.category in categoryLayers)) {
 			categoryLayers[item.category] = L.layerGroup();
@@ -289,47 +289,47 @@ class ObjectManager {
 
 		// Add Item to category Layer
 		item.addTo(categoryLayers[item.category]);
-		
+
 		item.update();
 		// this.select(i);
 	};
 
 	select(index) {
 		this.deselect();
-		
+
 		if (index < -1 || index >= this.items.length) {
 			throw "Index out of range" + index;
 		}
-		
+
 		this.selected = index;
 		var mapItem = this.getSelected();
-		
+
 		// Handle infobox
 		var container = infoBox.getContainer();
 		container.style.display = "block";
 		container.innerHTML = '';
 		container.append(mapItem.getInfoBox());
-		
-		mapItem.leafletItem.setStyle({color: "green"});
+
+		mapItem.leafletItem.setStyle({ color: "green" });
 	};
 
 	deselect() {
 		var mapItem = this.getSelected();
 		if (mapItem != null) {
-			mapItem.leafletItem.setStyle({color: mapItem.color});
+			mapItem.leafletItem.setStyle({ color: mapItem.color });
 		}
 		// Hide infobox
 		infoBox.getContainer().style.display = "none";
 		this.selected = -1;
 	};
-	
+
 	getSelected() {
 		if (this.selected == -1) {
 			return null;
 		}
 		return this.items[this.selected];
 	};
-	
+
 	import(data) {
 		data.items.forEach((itemData) => {
 			this.addItem(itemData);
@@ -339,7 +339,7 @@ class ObjectManager {
 		}
 	};
 
-	export(sep='\t', exportPos = true) {
+	export(sep = '\t', exportPos = true) {
 		var data = {
 			items: []
 		};
@@ -362,13 +362,13 @@ class ObjectManager {
 		var item = this.items[id];
 		item.leafletItem.removeFrom(categoryLayers[item.category]);
 		delete this.items[id];
-		if (this.selected == id){
+		if (this.selected == id) {
 			this.deselect();
 		}
 	}
-	
+
 	deleteAllItems() {
-		for(const [_key, layer] of Object.entries(categoryLayers)) {
+		for (const [_key, layer] of Object.entries(categoryLayers)) {
 			map.removeLayer(layer);
 			layerControl.removeLayer(layer);
 		}
@@ -448,9 +448,9 @@ const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // 	maxZoom: 18,
 // }).addTo(map);
 
-const googleSat = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+const googleSat = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
 	maxZoom: 22,
-	subdomains:['mt0','mt1','mt2','mt3']
+	subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
 }).addTo(map);
 
 var baseMaps = {
@@ -472,7 +472,7 @@ let objects = new ObjectManager();
 // Object Rotation
 let startRot = 0;
 
-map.on('mousedown', function(e) {
+map.on('mousedown', function (e) {
 	var selected = objects.getSelected();
 	if (selected == null) {
 		return;
@@ -484,32 +484,32 @@ map.on('mousedown', function(e) {
 	startRot = selected.rotation - calculateRotationAngle(selected.leafletItem.getBounds().getCenter(), e.latlng);
 });
 
-map.on('mousemove', function(e) {
+map.on('mousemove', function (e) {
 	var selected = objects.getSelected();
 	if (selected == null) {
 		return;
 	}
 	if (e.originalEvent.buttons == 2) {
-		selected.rotation = (startRot + calculateRotationAngle(selected.leafletItem.getBounds().getCenter(), e.latlng)) % 360.0; 
+		selected.rotation = (startRot + calculateRotationAngle(selected.leafletItem.getBounds().getCenter(), e.latlng)) % 360.0;
 		selected.update();
 	}
 });
 
-map.on('mouseup', function(e) {
+map.on('mouseup', function (e) {
 	if (e.originalEvent.button == 2) {
 		if (objects.getSelected() != null) {
-			
+
 		}
 	}
 });
 
-map.on('preclick', function(e) {
+map.on('preclick', function (e) {
 	objects.deselect(); // UGLY
 })
 
 
 // Hotkeys
-map.on('keydown', function(e) {
+map.on('keydown', function (e) {
 	var key = e.originalEvent.key;
 	if (key === "Escape") {
 		objects.deselect();
@@ -654,7 +654,7 @@ let items = [
 ];
 
 L.Control.ItemAddControl = L.Control.extend({
-	onAdd: function(map) {
+	onAdd: function (map) {
 		var el = L.DomUtil.create('div', 'leaflet-bar item-add-control');
 
 		for (let item in items) {
@@ -677,11 +677,11 @@ L.Control.ItemAddControl = L.Control.extend({
 		return el;
 	},
 
-	onRemove: function(map) {}
+	onRemove: function (map) { }
 });
 
 L.Control.ExportControl = L.Control.extend({
-	onAdd: function(map) {
+	onAdd: function (map) {
 		var el = L.DomUtil.create('div', 'leaflet-bar export-control');
 
 		let btn_import = L.DomUtil.create('button', '', el);
@@ -716,30 +716,29 @@ L.Control.ExportControl = L.Control.extend({
 		return el;
 	},
 
-	onRemove: function(map) {}
+	onRemove: function (map) { }
 });
 
 L.Control.InfoControl = L.Control.extend({
-	onAdd: function(map) {
-	  var container = L.DomUtil.create('div', 'leaflet-bar info-box');
-	  L.DomEvent.disableClickPropagation(container);
-	  L.DomEvent.disableScrollPropagation(container);
+	onAdd: function (map) {
+		var container = L.DomUtil.create('div', 'leaflet-bar info-box');
+		L.DomEvent.disableClickPropagation(container);
+		L.DomEvent.disableScrollPropagation(container);
 
-	  return container;
+		return container;
 	},
 
-	onRemove: function(map) {}
-  });
+	onRemove: function (map) { }
+});
 
-let itemAdd = new L.Control.ItemAddControl({position: 'topright'}).addTo(map);
-let exportJson = new L.Control.ExportControl({position: 'topright'}).addTo(map);
-let infoBox = new L.Control.InfoControl({position: 'bottomleft'}).addTo(map);
+let itemAdd = new L.Control.ItemAddControl({ position: 'topright' }).addTo(map);
+let exportJson = new L.Control.ExportControl({ position: 'topright' }).addTo(map);
+let infoBox = new L.Control.InfoControl({ position: 'bottomleft' }).addTo(map);
 
 if (typeof data !== 'undefined') {
 	objects.import(data);
 }
-else
-{
+else {
 	let data = [];
 	var memoryJSON = JSON.parse(localStorage.getItem("jsondata"));
 	if (memoryJSON != null) {
