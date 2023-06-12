@@ -418,7 +418,13 @@ class ObjectManager {
 
 
 // Setup Map
-const map = L.map('map').setView([49.02000, 8.42317], 20);
+const map = L.map('map');
+try {
+	var mappos = JSON.parse(localStorage.getItem("mappos"));
+	map.setView([mappos.lat, mappos.lng], mappos.zoom);
+} catch (error) {
+	map.setView([49.02000, 8.42317], 13);
+}
 
 
 // Add Background imagery
@@ -530,6 +536,12 @@ map.on('keydown', function(e) {
 		objects.deleteRect(objects.selected)
 	}
 });
+
+window.onbeforeunload = function() {
+	var data = map.getCenter();
+	data.zoom = map.getZoom();
+	localStorage.setItem("mappos", JSON.stringify(data));
+}
 
 let items = [
 	{
