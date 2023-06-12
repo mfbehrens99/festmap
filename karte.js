@@ -8,7 +8,6 @@ function rotate(x, y, r) {
 }
 
 function calculateRotationAngle(latlngPivot, latlngMouse) {
-	// var center = rect.polygon.getBounds().getCenter();
 	var dx = latlngMouse.lng - latlngPivot.lng;
 	var dy = latlngMouse.lat - latlngPivot.lat;
 	return Math.atan2(dx, dy) * (180 / Math.PI);
@@ -16,19 +15,27 @@ function calculateRotationAngle(latlngPivot, latlngMouse) {
 
 
 // Map Items
-class Rectangle {
-	constructor(latPos, lngPos, xSize, ySize, rotation, color, text, category) {
-		this.latPos = latPos;
-		this.lngPos = lngPos;
-		this.xSize = xSize;
-		this.ySize = ySize;
-		this.rotation = rotation;
-		this.color = color;
-		this.text = text;
-		this.category = category;
-		this.polygon = L.polygon([[0.0,0.0], [0.0,0.0], [0.0,0.0], [0.0,0.0]], {color: color, draggable: true});
-		// this.marker = new L.marker([0.0, 0.0], { opacity: 1.0 });
-		this.polygon.bindTooltip(text, {
+class MapItem {
+	constructor(data) {
+		if (data.name == null || data.category == null || data.color == null) {
+			console.log(data);
+			throw "Name, Kategorie und Farbe müssen angegeben werden."
+		}
+		this.name = data.name;
+		this.category = data.category;
+		this.color = data.color;
+
+		if (data.lat == null || data.lng == null) {
+			console.log(data);
+			throw "Die Position muss angegeben werden.";
+		}
+		this.lat = data.lat;
+		this.lng = data.lng;
+		this.leafletItem = {};
+	}
+
+	addTo(elem) {
+		this.leafletItem.bindTooltip(this.name, {
 			//permanent: true,
 			direction: 'top',
 			className: 'my-labels',
@@ -36,31 +43,93 @@ class Rectangle {
 			sticky: true,
 		});
 
-		const rectObj = this;
-		this.polygon.on('dragstart', function(e) {
+		const polyObj = this;
+		this.leafletItem.on('dragstart', function(e) {
 			objects.addRevertStep();
 		});
-		this.polygon.on('dragend', function(e) {
-			// Update the rectangle object whenever the polygon has been moved
+		this.leafletItem.on('dragend', function(e) {
+			// Update the item whenever the polygon has been moved
 			var center = this.getBounds().getCenter();
-			rectObj.latPos = center.lat;
-			rectObj.lngPos = center.lng;
-			rectObj.update();
-		  });
+			polyObj.lat = center.lat;
+			polyObj.lng = center.lng;
+			polyObj.update();
+		});
+		this.leafletItem.addTo(elem);
 		this.update();
 	}
 
-	addTo(elem) {
-		this.polygon.addTo(elem);
-		// this.marker.addTo(elem);
+	update() {
+		this.leafletItem.getTooltip().setContent(this.name);
+	};
+
+	delete() {};
+
+	toJSON() {
+		return {
+			name: this.name,
+			category: this.category,
+			color: this.color,
+			lat: this.lat,
+			lng: this.lng,
+		}
+	};
+
+	getInfoBox() {
+		const mapItem = this;
+		var tbl = document.createElement('table');
+
+		var row_name = tbl.insertRow();
+		var label_name = row_name.insertCell();
+		var name = row_name.insertCell();
+		label_name.append(document.createTextNode("Name: "));
+		var input_name = document.createElement('input');
+		input_name.id = "info_name";
+		input_name.value = this.name;
+		input_name.onchange = function() {
+			mapItem.name = this.value;
+			mapItem.update();
+		}
+		name.append(input_name);
+
+		// Kategorie
+
+		var row_color = tbl.insertRow();
+		var label_color = row_color.insertCell();
+		var color = row_color.insertCell();
+		label_color.append(document.createTextNode("Color: "));
+		var input_color = document.createElement('input');
+		input_color.id = "info_name";
+		input_color.type = "color";
+		input_color.value = this.color;
+		input_color.onchange = function() {
+			mapItem.color = this.value;
+			mapItem.update();
+		}
+		color.append(input_color);
+
+		return tbl;
+	};
+};
+
+class Rectangle extends MapItem {
+	constructor(data) {
+		super(data);
+		if (data.xSize == null || data.ySize == null || data.rotation == null) {
+			console.log(data);
+			throw "Die Dimensionen und die Rotation muss für ein Rechteck angegeben werden.";
+		}
+		this.xSize = data.xSize;
+		this.ySize = data.ySize;
+		this.rotation = data.rotation;
+
+		this.leafletItem = L.polygon([[0.0,0.0], [0.0,0.0], [0.0,0.0], [0.0,0.0]], {color: data.color, draggable: true});
 	}
 
 	update() {
-		const latLenght = 111300.0; // Meter
-		const lngLenght = latLenght * Math.cos(this.latPos / 180.0 * Math.PI); // Meter
+		super.update();
 
-		let x1 = 0.5 * (this.xSize * Math.cos(this.rotation) - this.ySize * Math.sin(this.rotation)) / latLenght;
-		let y1 = 0.5 * (this.ySize * Math.cos(this.rotation) + this.xSize * Math.sin(this.rotation)) / lngLenght;
+		const latLenght = 111300.0; // Meter
+		const lngLenght = latLenght * Math.cos(this.lat / 180.0 * Math.PI); // Meter
 
 		let points = [
 			rotate(-this.xSize, this.ySize, this.rotation),
@@ -72,75 +141,188 @@ class Rectangle {
 		for (let i = 0; i < 4; ++i) {
 			points[i][0] /= 2.0 * latLenght;
 			points[i][1] /= 2.0 * lngLenght;
-			points[i][0] += this.latPos;
-			points[i][1] += this.lngPos;
+			points[i][0] += this.lat;
+			points[i][1] += this.lng;
 		}
 
-		this.polygon.setLatLngs(points);
-		// this.marker.setLatLng([this.latPos, this.lngPos]);
-	}
+		this.leafletItem.setLatLngs(points);
+	};
 
 	delete() {
-		this.polygon.removeFrom(categoryLayers[this.category]);
-	}
-}
+		this.leafletItem.removeFrom(categoryLayers[this.category]);
+	};
 
+	toJSON() {
+		var json = super.toJSON();
+		json.type = "Rectangle";
+		json.xSize = this.xSize;
+		json.ySize = this.ySize;
+		json.rotation = this.rotation;
+		return json;
+	};
+
+	getInfoBox() {
+		const mapItem = this;
+		var tbl = super.getInfoBox()
+
+		var row_size = tbl.insertRow();
+		var label_size = row_size.insertCell();
+		var size = row_size.insertCell();
+		label_size.append(document.createTextNode("Size: "));
+		var input_xSize = document.createElement('input');
+		input_xSize.type = "number";
+		input_xSize.size = "6"
+		input_xSize.value = this.xSize;
+		input_xSize.onchange = function() {
+			mapItem.xSize = this.value;
+			mapItem.update();
+		}
+		var input_ySize = document.createElement('input');
+		input_ySize.type = "number";
+		input_ySize.size = "6"
+		input_ySize.value = this.ySize;
+		input_ySize.onchange = function() {
+			mapItem.ySize = this.value;
+			mapItem.update();
+		}
+		size.append(input_xSize);
+		size.append(document.createTextNode(" x "));
+		size.append(input_ySize);
+
+		return tbl;
+	};
+
+};
+
+class Circle extends MapItem {
+	constructor(data) {
+		super(data);
+		if (data.radius == null) {
+			throw "Der Radius muss für einen Kreis angegeben werden.";
+		}
+		this.radius = data.radius;
+
+
+		this.leafletItem = L.circle([0.0,0.0], {radius: this.radius, color: data.color, draggable: true});
+	};
+
+	update() {
+		super.update();
+		this.leafletItem.setLatLng(L.latLng(this.lat, this.lng))
+		this.leafletItem.setRadius(this.radius);
+	};
+
+	delete() {
+		this.leafletItem.removeFrom(categoryLayers[this.category]);
+	};
+
+	toJSON() {
+		var json = super.toJSON()
+		json.type = "Circle";
+		json.radius = this.radius;
+		return json;
+	}
+
+	getInfoBox() {
+		const mapItem = this;
+		var tbl = super.getInfoBox()
+
+		var row_radius = tbl.insertRow();
+		var label_radius = row_radius.insertCell();
+		var radius = row_radius.insertCell();
+		label_radius.append(document.createTextNode("Radius: "));
+		var input_radius = document.createElement('input');
+		input_radius.type = "number";
+		input_radius.value = this.radius;
+		input_radius.onchange = function() {
+			mapItem.radius = this.value;
+			mapItem.update();
+		}
+
+		radius.append(input_radius);
+
+		return tbl;
+	};
+};
 
 class ObjectManager {
-	constructor(layerControl, categoryLayers) {
-		this.rects = [];
+	constructor() {
+		this.items = [];
 		this.selected = -1;
-		this.copyRect = {};
+		this.copyItem = null;
 		this.revertSteps = [];
 		this.revertIndex = -1;
 	};
 
-	addRect(rect) {
-		rect.update();
-		this.rects.push(rect);
-		this.addRectToCategoryLayer(rect);
+	addItem(itemData) {
+		// Create a Item from itemData
+		var item;
+		switch(itemData.type) {
+			case "Rectangle":
+				item = new Rectangle(itemData);
+				break;
+			case "Circle":
+				item = new Circle(itemData);
+				break;
+			default:
+				item = new Rectangle(itemData);
+				console.log(data);
+				break;
+		}
 
-		// Setup select rect handler
+		// Add Item to Items list
+		this.items.push(item);
+
+		// Setup select select click handler
 		const objMan = this;
-		const i = this.rects.length - 1;
-		rect.polygon.on('click', function(e) {
+		const i = this.items.length - 1;
+		item.leafletItem.on('click', function(e) {
 			objMan.select(i);
 		});
-		this.select(i);
+		
+		// Create new category layer if it does not already exist
+		if (!(item.category in categoryLayers)) {
+			categoryLayers[item.category] = L.layerGroup();
+			layerControl.addOverlay(categoryLayers[item.category], item.category);
+			categoryLayers[item.category].addTo(map);
+		}
+
+		// Add Item to category Layer
+		item.addTo(categoryLayers[item.category]);
+		
+		item.update();
+		// this.select(i);
+	};
+
+	addObjects(data) {
+		data.forEach((itemData) => {
+			this.addItem(itemData);
+		});
 	};
 
 	select(index) {
 		this.deselect();
 
-		var old_rect = this.getSelected();
-		if (old_rect != null) {
-			old_rect.polygon.setStyle({color: old_rect.color});
-		}
-		infoBox.getContainer().style.display = "none";
-	
-		if (index < -1 || index >= this.rects.length) {
-			// Out of index
-			return;
+		if (index < -1 || index >= this.items.length) {
+			throw "Index out of range" + index;
 		}
 
 		this.selected = index;
-		var rect = this.getSelected();
+		var mapItem = this.getSelected();
 
 		// Handle infobox
-		infoBox.getContainer().style.display = "block";
-		document.getElementById("info_text").value = rect.text;
-		document.getElementById("info_xSize").value = rect.xSize;
-		document.getElementById("info_ySize").value = rect.ySize;
-		// document.getElementById("info_category").value = rect.category;
-		document.getElementById("info_color").value = rect.color;
+		var container = infoBox.getContainer();
+		container.style.display = "block";
+		container.innerHTML = '';
+		container.append(mapItem.getInfoBox());
 
-		rect.polygon.setStyle({color: "green"});
+		mapItem.leafletItem.setStyle({color: "green"});
 	};
 
 	deselect() {
-		var rect = this.getSelected();
-		if (rect != null) {
-			rect.polygon.setStyle({color: rect.color});
+		var mapItem = this.getSelected();
+		if (mapItem != null) {
+			mapItem.leafletItem.setStyle({color: mapItem.color});
 		}
 		// Hide infobox
 		infoBox.getContainer().style.display = "none";
@@ -151,49 +333,24 @@ class ObjectManager {
 		if (this.selected == -1) {
 			return null;
 		}
-		return this.rects[this.selected];
+		return this.items[this.selected];
 	};
 
-	addRectToCategoryLayer(rect) {
-		if (!(rect.category in categoryLayers)) {
-			categoryLayers[rect.category] = L.layerGroup();
-			layerControl.addOverlay(categoryLayers[rect.category], rect.category);
-			categoryLayers[rect.category].addTo(map);
-		}
-		rect.addTo(categoryLayers[rect.category]);
-	};
-
-	addRects(data) {
-		data.forEach((r) => {
-			this.addRect(new Rectangle(r.lat, r.lng, r.width, r.height, r.rotation, r.color, r.name, r.category));
-		});
-		this.deselect();
-	};
-	
 	exportRects(sep='\t') {
 		let data = [];
-		this.rects.forEach((rect) => {
+		this.items.forEach((rect) => {
 			if (rect == null) {
 				return;
 			}
-			data.push({
-				name: rect.text,
-				width: rect.xSize,
-				height: rect.ySize,
-				lat: rect.latPos,
-				lng: rect.lngPos,
-				rotation: rect.rotation,
-				color: rect.color,
-				category: rect.category,
-			});
+			data.push(rect.toJSON());
 		});
 		return JSON.stringify(data, null, sep);
 	};
 
 	deleteRect(id) {
-		var rect = this.rects[id];
-		rect.polygon.removeFrom(categoryLayers[rect.category]);
-		delete this.rects[id];
+		var rect = this.items[id];
+		rect.leafletItem.removeFrom(categoryLayers[rect.category]);
+		delete this.items[id];
 		if (this.selected == id){
 			this.deselect();
 		}
@@ -205,30 +362,26 @@ class ObjectManager {
 			layerControl.removeLayer(layer);
 		}
 		categoryLayers = {};
-		this.rects = [];
+		this.items = [];
 	};
 
 	copy() {
-		var rect = this.getSelected();
-		if (rect == null) {
+		var item = this.getSelected();
+		if (item == null) {
 			return;
 		}
 
-		this.copyRect = {
-			xSize: rect.xSize,
-			ySize: rect.ySize,
-			rotation: rect.rotation,
-			color: rect.color,
-			text: rect.text,
-			category: rect.category,
-		};
+		this.copyItem = item.toJSON();
 	};
 
 	paste(pos) {
-		if (this.copyRect == null) {
+		if (this.copyItem == null) {
 			return;
 		}
-		objects.addRect(new Rectangle(pos.lat, pos.lng, this.copyRect.xSize, this.copyRect.ySize, this.copyRect.rotation, this.copyRect.color, this.copyRect.text, this.copyRect.category));
+		var item = this.copyItem
+		item.lat = pos.lat;
+		item.lng = pos.lng;
+		objects.addItem(item);
 	};
 
 	addRevertStep() {
@@ -250,9 +403,16 @@ class ObjectManager {
 		}
 		this.revertIndex++;
 		this.clearRects();
-		this.addRects(JSON.parse(this.revertSteps[this.revertSteps.length - this.revertIndex - 1]));
+		this.addObjects(JSON.parse(this.revertSteps[this.revertSteps.length - this.revertIndex - 1]));
 	}
 
+	repeat() {
+		if (this.revertIndex < 1) {
+			return;
+		}
+		this.revertIndex--;
+		this.clearRects();
+		this.addObjects(JSON.parse(this.revertSteps[this.revertSteps.length - this.revertIndex - 1]));
 	}
 }
 
@@ -268,6 +428,16 @@ const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
+// var gl = L.mapboxGL({
+//     accessToken: '{token}',
+//     style: 'https://openmaptiles.github.io/osm-bright-gl-style/style-cdn.json'
+// }).addTo(map);
+
+// const osm_vector = L.tileLayer('https://api.maptiler.com/maps/streets/{z}/{x}/{y}.pbf?key=BunygT2ibwqnRLLrkeEw', {
+// 	attribution: 'Map data &copy; <a href="https://www.maptiler.com/">MapTiler</a> contributors',
+// 	maxZoom: 18,
+// }).addTo(map);
+
 const googleSat = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
 	maxZoom: 22,
 	subdomains:['mt0','mt1','mt2','mt3']
@@ -275,6 +445,7 @@ const googleSat = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z
 
 var baseMaps = {
 	"Google satellite": googleSat,
+	// "OpenStreetMap Vector": osm_vector, 
 	"OpenStreetMap": osm,
 };
 
@@ -284,7 +455,7 @@ let categoryLayers = {};
 var layerControl = L.control.layers(baseMaps, categoryLayers).addTo(map);
 
 
-let objects = new ObjectManager(layerControl, categoryLayers);
+let objects = new ObjectManager();
 
 
 
@@ -300,7 +471,7 @@ map.on('mousedown', function(e) {
 		// Ctrl+Z function for Rotation
 		objects.addRevertStep();
 	}
-	startRot = selected.rotation - calculateRotationAngle(selected.polygon.getBounds().getCenter(), e.latlng);
+	startRot = selected.rotation - calculateRotationAngle(selected.leafletItem.getBounds().getCenter(), e.latlng);
 });
 
 map.on('mousemove', function(e) {
@@ -309,7 +480,7 @@ map.on('mousemove', function(e) {
 		return;
 	}
 	if (e.originalEvent.buttons == 2) {
-		selected.rotation = (startRot + calculateRotationAngle(selected.polygon.getBounds().getCenter(), e.latlng)) % 360.0; 
+		selected.rotation = (startRot + calculateRotationAngle(selected.leafletItem.getBounds().getCenter(), e.latlng)) % 360.0; 
 		selected.update();
 	}
 });
@@ -485,16 +656,14 @@ L.Control.ItemAddControl = L.Control.extend({
 			btn.appendChild(t);
 			btn.addEventListener("click", (event) => {
 				let center = map.getCenter();
-				objects.addRect(new Rectangle(center.lat, center.lng, width, height, 0.0, color, name, category));
+				objects.addItem(new Rectangle(center.lat, center.lng, width, height, 0.0, color, name, category));
 			});
 		}
 
 		return el;
 	},
 
-	onRemove: function(map) {
-		// Nothing to do here
-	}
+	onRemove: function(map) {}
 });
 
 L.Control.ExportControl = L.Control.extend({
@@ -509,7 +678,7 @@ L.Control.ExportControl = L.Control.extend({
 			var data = JSON.parse(prompt("Exportierte JSON eingeben!"));
 
 			objects.clearRects();
-			objects.addRects(data)
+			objects.addObjects(data)
 		});
 
 		let btn_export = L.DomUtil.create('button', '', el);
@@ -533,61 +702,24 @@ L.Control.ExportControl = L.Control.extend({
 		return el;
 	},
 
-	onRemove: function(map) {
-		// Nothing to do here
-	}
+	onRemove: function(map) {}
 });
 
 L.Control.InfoControl = L.Control.extend({
 	onAdd: function(map) {
 	  var container = L.DomUtil.create('div', 'leaflet-bar info-box');
-	  container.innerHTML = `
-		<table>
-			<tr>
-				<td>Name:</td>
-				<td><input type="text" id="info_text" onchange="infoBoxUpdateRect()"/></td>
-			</tr>
-			<tr>
-				<td>Größe:</td>
-				<td><input type="number" id="info_xSize" size=7 onchange="infoBoxUpdateRect()" /> x <input type="number" id="info_ySize" size=7 onchange="infoBoxUpdateRect()" /></td>
-			</tr>
-			<!-- <tr>
-				<td>Kategorie:</td>
-				<td><input type="text" id="info_category" onchange="infoBoxUpdateRect()" /></td>
-			</tr> -->
-			<tr>
-				<td>Farbe:</td>
-				<td><input type="color" id="info_color" onchange="infoBoxUpdateRect()" /> <input type="submit" onclick="objects.deselect()" value="Schließen" /></td>
-			</tr>
-		</table>
-	  `;
+	  L.DomEvent.disableClickPropagation(container);
+	  L.DomEvent.disableScrollPropagation(container);
 
 	  return container;
 	},
 
-	onRemove: function(map) {
-	  // Cleanup code if needed
-	}
+	onRemove: function(map) {}
   });
 
 let itemAdd = new L.Control.ItemAddControl({position: 'topright'}).addTo(map);
 let exportJson = new L.Control.ExportControl({position: 'topright'}).addTo(map);
 let infoBox = new L.Control.InfoControl({position: 'bottomleft'}).addTo(map);
-
-function infoBoxUpdateRect(){
-	var rect = objects.getSelected();
-	if (rect == null) {
-		// That should not happen
-		return;
-	}
-	rect.text = document.getElementById("info_text").value;
-	rect.polygon.getTooltip().setContent(document.getElementById("info_text").value);
-	rect.xSize = document.getElementById("info_xSize").value;
-	rect.ySize = document.getElementById("info_ySize").value;
-	// rect.category = document.getElementById("info_category").value;
-	rect.color = document.getElementById("info_color").value;
-	rect.update();
-}
 
 let data = [];
 var memoryJSON = JSON.parse(localStorage.getItem("jsondata"));
@@ -598,4 +730,4 @@ if (memoryJSON != null) {
 }
 
 
-objects.addRects(data);
+objects.addObjects(data);
