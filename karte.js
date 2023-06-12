@@ -43,16 +43,16 @@ class MapItem {
 			sticky: true,
 		});
 
-		const polyObj = this;
+		const mapItem = this;
 		this.leafletItem.on('dragstart', function(e) {
 			objects.addRevertStep();
 		});
 		this.leafletItem.on('dragend', function(e) {
 			// Update the item whenever the polygon has been moved
 			var center = this.getBounds().getCenter();
-			polyObj.lat = center.lat;
-			polyObj.lng = center.lng;
-			polyObj.update();
+			mapItem.lat = center.lat;
+			mapItem.lng = center.lng;
+			mapItem.update();
 		});
 		this.leafletItem.addTo(elem);
 		this.update();
@@ -274,10 +274,10 @@ class ObjectManager {
 		this.items.push(item);
 
 		// Setup select select click handler
-		const objMan = this;
+		const objectManager = this;
 		const i = this.items.length - 1;
 		item.leafletItem.on('click', function(e) {
-			objMan.select(i);
+			objectManager.select(i);
 		});
 		
 		// Create new category layer if it does not already exist
@@ -294,28 +294,22 @@ class ObjectManager {
 		// this.select(i);
 	};
 
-	addObjects(data) {
-		data.forEach((itemData) => {
-			this.addItem(itemData);
-		});
-	};
-
 	select(index) {
 		this.deselect();
-
+		
 		if (index < -1 || index >= this.items.length) {
 			throw "Index out of range" + index;
 		}
-
+		
 		this.selected = index;
 		var mapItem = this.getSelected();
-
+		
 		// Handle infobox
 		var container = infoBox.getContainer();
 		container.style.display = "block";
 		container.innerHTML = '';
 		container.append(mapItem.getInfoBox());
-
+		
 		mapItem.leafletItem.setStyle({color: "green"});
 	};
 
@@ -328,35 +322,52 @@ class ObjectManager {
 		infoBox.getContainer().style.display = "none";
 		this.selected = -1;
 	};
-
+	
 	getSelected() {
 		if (this.selected == -1) {
 			return null;
 		}
 		return this.items[this.selected];
 	};
+	
+	import(data) {
+		data.items.forEach((itemData) => {
+			this.addItem(itemData);
+		});
+		if (data.map) {
+			map.setView([data.map.lat, data.map.lng], data.map.zoom);
+		}
+	};
 
-	exportRects(sep='\t') {
-		let data = [];
-		this.items.forEach((rect) => {
-			if (rect == null) {
+	export(sep='\t', exportPos = true) {
+		var data = {
+			items: []
+		};
+		// Add Map Items
+		this.items.forEach((item) => {
+			if (item == null) {
 				return;
 			}
-			data.push(rect.toJSON());
+			data.items.push(item.toJSON());
 		});
+		if (exportPos) {
+			// Add Map Position
+			data.map = map.getCenter();
+			data.map.zoom = map.getZoom();
+		}
 		return JSON.stringify(data, null, sep);
 	};
 
-	deleteRect(id) {
-		var rect = this.items[id];
-		rect.leafletItem.removeFrom(categoryLayers[rect.category]);
+	deleteItem(id) {
+		var item = this.items[id];
+		item.leafletItem.removeFrom(categoryLayers[item.category]);
 		delete this.items[id];
 		if (this.selected == id){
 			this.deselect();
 		}
 	}
-
-	clearRects() {
+	
+	deleteAllItems() {
 		for(const [_key, layer] of Object.entries(categoryLayers)) {
 			map.removeLayer(layer);
 			layerControl.removeLayer(layer);
@@ -381,7 +392,7 @@ class ObjectManager {
 		var item = this.copyItem
 		item.lat = pos.lat;
 		item.lng = pos.lng;
-		objects.addItem(item);
+		this.addItem(item);
 	};
 
 	addRevertStep() {
@@ -389,7 +400,7 @@ class ObjectManager {
 			this.revertSteps.splice(this.revertSteps.length - this.revertIndex - 1);
 			this.revertIndex = -1;
 		}
-		this.revertSteps.push(objects.exportRects(''));
+		this.revertSteps.push(this.export('', false));
 		// Maybe limit stack size by calling this.revertSteps.shift() once a certain size has been exceeded
 	};
 
@@ -402,8 +413,8 @@ class ObjectManager {
 			this.revertIndex = 0;
 		}
 		this.revertIndex++;
-		this.clearRects();
-		this.addObjects(JSON.parse(this.revertSteps[this.revertSteps.length - this.revertIndex - 1]));
+		this.deleteAllItems();
+		this.import(JSON.parse(this.revertSteps[this.revertSteps.length - this.revertIndex - 1]));
 	}
 
 	repeat() {
@@ -411,21 +422,14 @@ class ObjectManager {
 			return;
 		}
 		this.revertIndex--;
-		this.clearRects();
-		this.addObjects(JSON.parse(this.revertSteps[this.revertSteps.length - this.revertIndex - 1]));
+		this.deleteAllItems();
+		this.import(JSON.parse(this.revertSteps[this.revertSteps.length - this.revertIndex - 1]));
 	}
 }
 
 
 // Setup Map
-const map = L.map('map');
-try {
-	var mappos = JSON.parse(localStorage.getItem("mappos"));
-	map.setView([mappos.lat, mappos.lng], mappos.zoom);
-} catch (error) {
-	map.setView([49.02000, 8.42317], 13);
-}
-
+const map = L.map('map').setView([49.02000, 8.42317], 13);
 
 // Add Background imagery
 const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -505,8 +509,6 @@ map.on('preclick', function(e) {
 
 
 // Hotkeys
-let revertRects = null;
-
 map.on('keydown', function(e) {
 	var key = e.originalEvent.key;
 	if (key === "Escape") {
@@ -522,6 +524,12 @@ map.on('keydown', function(e) {
 		let position = map.getCenter();
 		objects.paste(position);
 	}
+	else if (key === "x" && e.originalEvent.ctrlKey) {
+		// Cut
+		objects.copy();
+		objects.addRevertStep();
+		objects.deleteItem(objects.selected);
+	}
 	else if (key === "z" && e.originalEvent.ctrlKey) {
 		// Revert
 		objects.revert();
@@ -533,15 +541,9 @@ map.on('keydown', function(e) {
 	else if (key === "Delete" && objects.getSelected() != null) {
 		// Delete
 		objects.addRevertStep();
-		objects.deleteRect(objects.selected)
+		objects.deleteItem(objects.selected)
 	}
 });
-
-window.onbeforeunload = function() {
-	var data = map.getCenter();
-	data.zoom = map.getZoom();
-	localStorage.setItem("mappos", JSON.stringify(data));
-}
 
 let items = [
 	{
@@ -689,8 +691,8 @@ L.Control.ExportControl = L.Control.extend({
 		btn_import.addEventListener("click", (event) => {
 			var data = JSON.parse(prompt("Exportierte JSON eingeben!"));
 
-			objects.clearRects();
-			objects.addObjects(data)
+			objects.deleteAllItems();
+			objects.import(data)
 		});
 
 		let btn_export = L.DomUtil.create('button', '', el);
@@ -698,7 +700,7 @@ L.Control.ExportControl = L.Control.extend({
 		btn_export.appendChild(t_export);
 
 		btn_export.addEventListener("click", (event) => {
-			var json = objects.exportRects();
+			var json = objects.export();
 			window.open("data:text/json;charset=utf-8," + encodeURIComponent(json), "", "_blank")
 		});
 
@@ -707,8 +709,8 @@ L.Control.ExportControl = L.Control.extend({
 		btn_save.appendChild(t);
 
 		btn_save.addEventListener("click", (event) => {
-			var json = objects.exportRects();
-			localStorage.setItem("jsondata", json);
+			var data = objects.export();
+			localStorage.setItem("jsondata", data);
 		});
 
 		return el;
@@ -733,13 +735,18 @@ let itemAdd = new L.Control.ItemAddControl({position: 'topright'}).addTo(map);
 let exportJson = new L.Control.ExportControl({position: 'topright'}).addTo(map);
 let infoBox = new L.Control.InfoControl({position: 'bottomleft'}).addTo(map);
 
-let data = [];
-var memoryJSON = JSON.parse(localStorage.getItem("jsondata"));
-if (memoryJSON != null) {
-	if (confirm("Möchtest du deine letzten Kartendaten wiederherstellen?")) {
-		data = memoryJSON;
-	}
+if (typeof data !== 'undefined') {
+	objects.import(data);
 }
+else
+{
+	let data = [];
+	var memoryJSON = JSON.parse(localStorage.getItem("jsondata"));
+	if (memoryJSON != null) {
+		if (confirm("Möchtest du deine letzten Kartendaten wiederherstellen?")) {
+			data = memoryJSON;
+		}
+	}
 
-
-objects.addObjects(data);
+	objects.import(data);
+}
