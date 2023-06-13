@@ -49,7 +49,7 @@ class MapItem {
 		});
 		this.leafletItem.on('dragend', function (e) {
 			// Update the item whenever the polygon has been moved
-			var center = this.getBounds().getCenter();
+			var center = mapItem.leafletItem.getBounds().getCenter();
 			mapItem.lat = center.lat;
 			mapItem.lng = center.lng;
 			mapItem.update();
@@ -62,7 +62,9 @@ class MapItem {
 		this.leafletItem.getTooltip().setContent(this.name);
 	};
 
-	delete() { };
+	delete() {
+		this.leafletItem.removeFrom(categoryLayers[this.category]);
+	};
 
 	toJSON() {
 		return {
@@ -86,6 +88,7 @@ class MapItem {
 		input_name.id = "info_name";
 		input_name.value = this.name;
 		input_name.onchange = function () {
+			objects.addRevertStep();
 			mapItem.name = this.value;
 			mapItem.update();
 		}
@@ -102,6 +105,7 @@ class MapItem {
 		input_color.type = "color";
 		input_color.value = this.color;
 		input_color.onchange = function () {
+			objects.addRevertStep();
 			mapItem.color = this.value;
 			mapItem.update();
 		}
@@ -148,10 +152,6 @@ class Rectangle extends MapItem {
 		this.leafletItem.setLatLngs(points);
 	};
 
-	delete() {
-		this.leafletItem.removeFrom(categoryLayers[this.category]);
-	};
-
 	toJSON() {
 		var json = super.toJSON();
 		json.type = "Rectangle";
@@ -174,6 +174,7 @@ class Rectangle extends MapItem {
 		input_xSize.size = "6"
 		input_xSize.value = this.xSize;
 		input_xSize.onchange = function () {
+			objects.addRevertStep();
 			mapItem.xSize = this.value;
 			mapItem.update();
 		}
@@ -182,6 +183,7 @@ class Rectangle extends MapItem {
 		input_ySize.size = "6"
 		input_ySize.value = this.ySize;
 		input_ySize.onchange = function () {
+			objects.addRevertStep();
 			mapItem.ySize = this.value;
 			mapItem.update();
 		}
@@ -202,7 +204,6 @@ class Circle extends MapItem {
 		}
 		this.radius = data.radius;
 
-
 		this.leafletItem = L.circle([0.0, 0.0], { radius: this.radius, color: data.color, draggable: true });
 	};
 
@@ -210,10 +211,6 @@ class Circle extends MapItem {
 		super.update();
 		this.leafletItem.setLatLng(L.latLng(this.lat, this.lng))
 		this.leafletItem.setRadius(this.radius);
-	};
-
-	delete() {
-		this.leafletItem.removeFrom(categoryLayers[this.category]);
 	};
 
 	toJSON() {
@@ -235,6 +232,7 @@ class Circle extends MapItem {
 		input_radius.type = "number";
 		input_radius.value = this.radius;
 		input_radius.onchange = function () {
+			objects.addRevertStep();
 			mapItem.radius = this.value;
 			mapItem.update();
 		}
