@@ -52,9 +52,9 @@ class MapItem {
 		});
 		this.leafletItem.on('dragend', function (e) {
 			// Update the item whenever the polygon has been moved
-			var center = mapItem.leafletItem.getBounds().getCenter();
-			mapItem.lat = center.lat;
-			mapItem.lng = center.lng;
+			var position = mapItem.getPosition();
+			mapItem.lat = position.lat;
+			mapItem.lng = position.lng;
 			mapItem.update();
 		});
 
@@ -83,13 +83,14 @@ class MapItem {
 		}
 
 		if (this.selected) {
-			this.leafletItem.setStyle({ color: "green" });
+			this.styleSelected();
 		} else {
-			this.leafletItem.setStyle({ color: this.color });
+			this.styleDeselected();
 		}
 	};
 
 	delete() {
+		this.deselect();
 		this.leafletItem.removeFrom(categoryLayers[this.category]);
 	};
 
@@ -97,11 +98,25 @@ class MapItem {
 		this.selected = true;
 		this.update();
 		this.itemManager.updateInfobox();
-	}
+	};
 
 	deselect() {
 		this.selected = false;
 		this.update();
+	};
+
+	setPosition(latLng) {
+		this.lat = latLng.lat;
+		this.lng = latLng.lng;
+		this.update()
+	}
+
+	styleSelected() {
+		this.leafletItem.setStyle({ color: "green" });
+	};
+
+	styleDeselected() {
+		this.leafletItem.setStyle({ color: this.color });
 	}
 
 	export() {
@@ -112,6 +127,10 @@ class MapItem {
 			lat: this.lat,
 			lng: this.lng,
 		}
+	};
+
+	getPosition() {
+		return this.leafletItem.getBounds().getCenter();
 	};
 
 	getInfoBox() {
@@ -126,7 +145,7 @@ class MapItem {
 		input_name.id = "info_name";
 		input_name.value = this.name;
 		input_name.onchange = function () {
-			objects.addRevertStep();
+			mapItem.itemManager.addRevertStep();
 			mapItem.name = this.value;
 			mapItem.update();
 		}
@@ -143,7 +162,7 @@ class MapItem {
 		input_color.type = "color";
 		input_color.value = this.color;
 		input_color.onchange = function () {
-			objects.addRevertStep();
+			mapItem.itemManager.addRevertStep();
 			mapItem.color = this.value;
 			mapItem.update();
 		}
@@ -151,6 +170,22 @@ class MapItem {
 
 		return tbl;
 	};
+};
+
+class MarkerItem extends MapItem {
+	constructor(parent, data) {
+		super(parent, data);
+		// var icon = new L.icon();
+		this.leafletItem = new L.marker([data.lat, data.lng], {draggable: true});
+	};
+
+	getPosition() {
+		return this.leafletItem.getLatLng();
+	};
+
+	styleSelected() {};
+
+	styleDeselected() {};
 };
 
 class Rectangle extends MapItem {
@@ -237,7 +272,7 @@ class Rectangle extends MapItem {
 		input_xSize.size = "6"
 		input_xSize.value = this.xSize;
 		input_xSize.onchange = function () {
-			objects.addRevertStep();
+			mapItem.itemManager.addRevertStep();
 			mapItem.xSize = this.value;
 			mapItem.update();
 		}
@@ -246,7 +281,7 @@ class Rectangle extends MapItem {
 		input_ySize.size = "6"
 		input_ySize.value = this.ySize;
 		input_ySize.onchange = function () {
-			objects.addRevertStep();
+			mapItem.itemManager.addRevertStep();
 			mapItem.ySize = this.value;
 			mapItem.update();
 		}
@@ -295,7 +330,7 @@ class Circle extends MapItem {
 		input_radius.type = "number";
 		input_radius.value = this.radius;
 		input_radius.onchange = function () {
-			objects.addRevertStep();
+			mapItem.itemManager.addRevertStep();
 			mapItem.radius = this.value;
 			mapItem.update();
 		}
@@ -316,6 +351,8 @@ class Path extends MapItem {
 		this.interMarkers = [];
 
 		this.leafletItem = L.polyline(data.latLngs, {color: data.color, draggable: true });
+
+		this.length_text = document.createTextNode("");
 	};
 
 	addTo(elem) {
@@ -345,16 +382,8 @@ class Path extends MapItem {
 			var midpoint = L.latLngBounds(latLngs[i], latLngs[i + 1]).getCenter();
 			this.interMarkers[i].setLatLng(midpoint);
 		}
-	};
 
-	delete() {
-		super.delete();
-		this.markers.forEach((marker) => {
-			marker.removeFrom(this.itemManager.map);
-		});
-		this.interMarkers.forEach((marker) => {
-			marker.removeFrom(this.itemManager.map);
-		});
+		this.length_text.nodeValue = this.getLength().toFixed(1).toString() + " m";
 	};
 
 	select() {
@@ -364,12 +393,12 @@ class Path extends MapItem {
 		this.markers = [];
 		var latLngs = this.leafletItem.getLatLngs();
 		latLngs.forEach((latLng, i) => {
-			var marker = new L.circleMarker(latLng, {radius: 8, fillOpacity: 1, draggable: true});
+			const marker = new L.circleMarker(latLng, {radius: 8, fillOpacity: 1, draggable: true});
 			marker.on("dragstart", (e) => {
 				mapItem.itemManager.addRevertStep();
 			});
 			marker.on("drag", (e) => {
-				mapItem.updatePoint(i, e.latlng)
+				mapItem.updatePoint(i, marker.getLatLng())
 			});
 			marker.on("contextmenu", (e) => {
 				mapItem.deletePoint(i);
@@ -386,6 +415,9 @@ class Path extends MapItem {
 			marker.on("click", (e) => {
 				mapItem.addPoint(index, m.getLatLng());
 			})
+			marker.on("dragstart", (e) => {
+				m.setStyle({color: '#3388ff', radius: 8});
+			});
 			marker.on("dragend", (e) => {
 				mapItem.addPoint(index, m.getLatLng());
 			})
@@ -404,6 +436,18 @@ class Path extends MapItem {
 		});
 		this.interMarkers = [];
 		super.deselect();
+	};
+
+	setPosition(latLng) {
+		var latLngs = this.leafletItem.getLatLngs();
+		var offsetLat = latLng.lat - latLngs[0].lat;
+		var offsetLng = latLng.lng - latLngs[0].lng;
+		latLngs.forEach((l) => {
+			l.lat += offsetLat;
+			l.lng += offsetLng;
+		});
+		this.leafletItem.setLatLngs(latLngs);
+		this.update();
 	};
 
 	addPoint(i, latLng) {
@@ -433,12 +477,110 @@ class Path extends MapItem {
 		this.update();
 	};
 
+	getInfoBox() {
+		const mapItem = this;
+		var tbl = super.getInfoBox()
+
+		var row_length = tbl.insertRow();
+		var label_length = row_length.insertCell();
+		var length = row_length.insertCell();
+		label_length.append(document.createTextNode("Länge: "));
+		length.append(this.length_text);
+
+		return tbl;
+	};
+
 	export() {
 		var json = super.export();
 		json.type = "Path";
 		json.latLngs = this.leafletItem.getLatLngs();
 		return json;
 	};
+
+	getLength() {
+		var latLngs = this.leafletItem.getLatLngs();
+		var length = 0;
+
+		if (latLngs.length < 2) {
+			return 0;
+		}
+
+		for (var i = 0; i < latLngs.length - 1; i++) {
+			length += latLngs[i].distanceTo(latLngs[i + 1]);
+		}
+		return length;
+	}
+}
+
+class Cable extends Path {
+	constructor(itemManager, data) {
+		super(itemManager, data);
+
+		this.length = data.length;
+		this.current = data.current;
+	}
+
+	getInfoBox() {
+		const mapItem = this;
+		var tbl = super.getInfoBox()
+
+		var row_length = tbl.insertRow();
+		var label_length = row_length.insertCell();
+		var length = row_length.insertCell();
+		label_length.append(document.createTextNode("Länge: "));
+		var input_length = document.createElement('input');
+		input_length.type = "number";
+		input_length.value = this.length;
+		input_length.onchange = function () {
+			mapItem.itemManager.addRevertStep();
+			mapItem.length = this.value;
+			mapItem.update();
+		};
+		length.append(input_length);
+
+		const currentItems = ["Schuko", "16A", "32A", "63A", "125A"]
+		var row_current = tbl.insertRow();
+		var label_current = row_current.insertCell();
+		var current = row_current.insertCell();
+		label_current.append(document.createTextNode("Länge: "));
+		var select_current = document.createElement('select');
+		currentItems.forEach((item) => {
+			var option = document.createElement("option");
+			option.value = item;
+			option.text = item;
+			if (item == this.current) {
+				option.selected ="selected";
+			}
+			select_current.appendChild(option);
+		});
+		// select_current.type = "number";
+		select_current.value = this.current;
+		select_current.onchange = function () {
+			mapItem.itemManager.addRevertStep();
+			mapItem.current = this.value;
+			mapItem.update();
+		};
+		current.append(select_current);
+		
+
+		return tbl;
+	};
+
+	export() {
+		var json = super.export();
+		json.type = "Cable";
+		json.length = this.length;
+		json.current = this.current;
+		return json;
+	};
+}
+
+class Socket extends MarkerItem {
+	constructor(parent, data) {
+		super(parent, data);
+	};
+
+
 }
 
 class ItemManager {
@@ -448,6 +590,53 @@ class ItemManager {
 		this.copyItems = null;
 		this.revertSteps = [];
 		this.revertIndex = -1;
+
+		const itemManager = this;
+
+		// When clicked into empty map
+		this.map.on('click', function (e) {
+			if (e.originalEvent.target === map.getContainer()) {
+				itemManager.deselect();
+			}
+		})
+
+
+		// Hotkeys
+		this.map.on('keydown', function (e) {
+			var key = e.originalEvent.key;
+			if (key === "Escape") {
+				itemManager.deselect();
+			}
+			else if (key === "c" && e.originalEvent.ctrlKey) {
+				// Copy
+				itemManager.copy();
+			}
+			else if (key === "v" && e.originalEvent.ctrlKey) {
+				// Paste
+				itemManager.addRevertStep();
+				let position = itemManager.map.getCenter();
+				itemManager.paste(position);
+			}
+			else if (key === "x" && e.originalEvent.ctrlKey) {
+				// Cut
+				itemManager.copy();
+				itemManager.addRevertStep();
+				itemManager.deleteItem(itemManager.selected);
+			}
+			else if (key === "z" && e.originalEvent.ctrlKey) {
+				// Revert
+				itemManager.revert();
+			}
+			else if (key === "y" && e.originalEvent.ctrlKey) {
+				// Repeat
+				itemManager.repeat();
+			}
+			else if (key === "Delete" && itemManager.getSelected().length > 0) {
+				// Delete
+				itemManager.addRevertStep();
+				itemManager.getSelected().forEach((item) => {itemManager.deleteItem(item);});
+			}
+		});
 	};
 
 	addItem(itemData) {
@@ -460,8 +649,14 @@ class ItemManager {
 			case "Circle":
 				item = new Circle(this, itemData);
 				break;
-			case "Path" :
+			case "Path":
 				item = new Path(this, itemData);
+				break;
+			case "Cable":
+				item = new Cable(this, itemData);
+				break;
+			case "Socket":
+				item = new Socket(this, itemData);
 				break;
 			default:
 				item = new Rectangle(this, itemData);
@@ -483,7 +678,8 @@ class ItemManager {
 		item.addTo(categoryLayers[item.category]);
 
 		item.update();
-		// this.select(i);
+		
+		return item;
 	};
 
 	updateInfobox() {
@@ -505,7 +701,7 @@ class ItemManager {
 	};
 
 	getSelected() {
-		return this.items.filter(item => item.selected);
+		return this.items.filter((item) => {if (item == null) {return false}; return item.selected;});
 	};
 
 	import(data) {
@@ -530,8 +726,8 @@ class ItemManager {
 		});
 		if (exportPos) {
 			// Add Map Position
-			data.map = map.getCenter();
-			data.map.zoom = map.getZoom();
+			data.map = this.map.getCenter();
+			data.map.zoom = this.map.getZoom();
 		}
 		return JSON.stringify(data, null, sep);
 	};
@@ -557,19 +753,21 @@ class ItemManager {
 		}
 
 		this.copyItems = [];
-		selected.foreach((item) => {
+		selected.forEach((item) => {
 			this.copyItems.push(item.export());
 		});
 	};
 
 	paste(pos) {
-		if (this.copyItems.length == 0) {
+		if (this.copyItems != null && this.copyItems.length == 0) {
 			return;
 		}
 		// this.copyItems.lat = pos.lat;
 		// this.copyItems.lng = pos.lng;
 		this.copyItems.forEach((item) => {
-			this.addItem(item);
+			var mapItem = this.addItem(item);
+			mapItem.setPosition(pos);
+			
 		})
 	};
 
@@ -642,53 +840,7 @@ var baseMaps = {
 let categoryLayers = {};
 var layerControl = L.control.layers(baseMaps, categoryLayers).addTo(map);
 
-
 let objects = new ItemManager(map);
-
-// When clicked into empty map
-map.on('click', function (e) {
-	if (e.originalEvent.target === map.getContainer()) {
-		objects.deselect();
-	}
-})
-
-
-// Hotkeys
-map.on('keydown', function (e) {
-	var key = e.originalEvent.key;
-	if (key === "Escape") {
-		objects.deselect();
-	}
-	else if (key === "c" && e.originalEvent.ctrlKey) {
-		// Copy
-		objects.copy();
-	}
-	else if (key === "v" && e.originalEvent.ctrlKey) {
-		// Paste
-		objects.addRevertStep();
-		let position = map.getCenter();
-		objects.paste(position);
-	}
-	else if (key === "x" && e.originalEvent.ctrlKey) {
-		// Cut
-		objects.copy();
-		objects.addRevertStep();
-		objects.deleteItem(objects.selected);
-	}
-	else if (key === "z" && e.originalEvent.ctrlKey) {
-		// Revert
-		objects.revert();
-	}
-	else if (key === "y" && e.originalEvent.ctrlKey) {
-		// Repeat
-		objects.repeat();
-	}
-	else if (key === "Delete" && objects.getSelected().length > 0) {
-		// Delete
-		objects.addRevertStep();
-		objects.getSelected().forEach((item) => {objects.deleteItem(item);});
-	}
-});
 
 let items = [
 	{
@@ -821,6 +973,7 @@ L.Control.ItemAddControl = L.Control.extend({
 				data.lat = center.lat;
 				data.lng = center.lng;
 				objects.addItem(data);
+				objects.addRevertStep();
 			});
 		});
 
