@@ -133,6 +133,14 @@ class MapItem {
 		return this.leafletItem.getBounds().getCenter();
 	};
 
+	setCategory(category) {
+		if (this.category != category) {
+			this.itemManager.removeFromCategory(this);
+			this.category = category;
+			this.itemManager.addToCategory(this)
+		}
+	}
+
 	getInfoBox() {
 		const mapItem = this;
 		var tbl = document.createElement('table');
@@ -151,7 +159,19 @@ class MapItem {
 		}
 		name.append(input_name);
 
-		// Kategorie
+		var row_category = tbl.insertRow();
+		var label_category = row_category.insertCell();
+		var category = row_category.insertCell();
+		label_category.append(document.createTextNode("Kategorie: "));
+		var input_category = document.createElement('input');
+		input_category.id = "info_category";
+		input_category.value = this.category;
+		input_category.onchange = function () {
+			mapItem.itemManager.addRevertStep();
+			mapItem.setCategory(this.value);
+			mapItem.update();
+		}
+		category.append(input_category);
 
 		var row_color = tbl.insertRow();
 		var label_color = row_color.insertCell();
@@ -667,15 +687,7 @@ class ItemManager {
 		// Add Item to Items list
 		this.items.push(item);
 
-		// Create new category layer if it does not already exist
-		if (!(item.category in categoryLayers)) {
-			categoryLayers[item.category] = L.layerGroup();
-			layerControl.addOverlay(categoryLayers[item.category], item.category);
-			categoryLayers[item.category].addTo(map);
-		}
-
-		// Add Item to category Layer
-		item.addTo(categoryLayers[item.category]);
+		this.addToCategory(item)
 
 		item.update();
 		
@@ -732,11 +744,27 @@ class ItemManager {
 		return JSON.stringify(data, null, sep);
 	};
 
-	deleteItem(item) {
+	addToCategory(item) {
+		// Create new category layer if it does not already exist
+		if (!(item.category in categoryLayers)) {
+			categoryLayers[item.category] = L.layerGroup();
+			layerControl.addOverlay(categoryLayers[item.category], item.category);
+			categoryLayers[item.category].addTo(map);
+		}
+
+		// Add Item to category Layer
+		item.addTo(categoryLayers[item.category]);
+	};
+
+	removeFromCategory(item) {
 		item.leafletItem.removeFrom(categoryLayers[item.category]);
+	};
+
+	deleteItem(item) {
 		item.deselect();
+		this.removeFromCategory(item);
 		this.items[this.items.indexOf(item)] = null;
-	}
+	};
 
 	deleteAllItems() {
 		this.items.forEach((item) => {

@@ -1,0 +1,482 @@
+{
+	"items": [
+		{
+			"name": "5x10m Zelt (K2-Bar)",
+			"category": "Zelte",
+			"color": "#ffffff",
+			"lat": 49.02048472622587,
+			"lng": 8.42212624847889,
+			"type": "Rectangle",
+			"xSize": 10,
+			"ySize": 5,
+			"rotation": 58.75541085816793
+		},
+		{
+			"name": "6x12m Zelt (HaDiKo)",
+			"category": "Zelte",
+			"color": "#ffffff",
+			"lat": 49.020408969582405,
+			"lng": 8.422204703092575,
+			"type": "Rectangle",
+			"xSize": 12,
+			"ySize": 6,
+			"rotation": 60.76020663882312
+		},
+		{
+			"name": "Sonnenschirm",
+			"category": "Zelte",
+			"color": "#FFFF00",
+			"lat": 49.02030498180879,
+			"lng": 8.422381728887558,
+			"type": "Rectangle",
+			"xSize": "4",
+			"ySize": "4",
+			"rotation": 2.29472901282719
+		},
+		{
+			"name": "Sonnenschirm",
+			"category": "Zelte",
+			"color": "#FFFF00",
+			"lat": 49.02024231851976,
+			"lng": 8.422377035021782,
+			"type": "Rectangle",
+			"xSize": "4",
+			"ySize": "4",
+			"rotation": 2.29472901282719
+		},
+		{
+			"name": "Sonnenschirm",
+			"category": "Zelte",
+			"color": "#FFFF00",
+			"lat": 49.020201642272326,
+			"lng": 8.42231970280409,
+			"type": "Rectangle",
+			"xSize": "4",
+			"ySize": "4",
+			"rotation": 70.76755785845316
+		},
+		{
+			"name": "Biertheke",
+			"category": "Biergarnituren",
+			"color": "#ff0000",
+			"lat": 49.02045029945936,
+			"lng": 8.422094061970732,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": 0.5,
+			"rotation": 58.333717629601495
+		},
+		{
+			"name": "Biertheke",
+			"category": "Biergarnituren",
+			"color": "#ff0000",
+			"lat": 49.02045953402363,
+			"lng": 8.422117531299591,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": 0.5,
+			"rotation": 60.441858460611925
+		},
+		{
+			"name": "Biertheke",
+			"category": "Biergarnituren",
+			"color": "#ff0000",
+			"lat": 49.02046876858626,
+			"lng": 8.4221413359046,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": 0.5,
+			"rotation": 59.856488425010795
+		},
+		{
+			"name": "Biertheke",
+			"category": "Biergarnituren",
+			"color": "#ff0000",
+			"lat": 49.020478003147296,
+			"lng": 8.42216480523348,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": 0.5,
+			"rotation": 59.341405403303895
+		},
+		{
+			"name": "Biertheke",
+			"category": "Biergarnituren",
+			"color": "#ff0000",
+			"lat": 49.020487017836075,
+			"lng": 8.422188274562359,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": 0.5,
+			"rotation": 59.03560431344319
+		},
+		{
+			"name": "1x2m Tisch",
+			"category": "Tische",
+			"color": "#0000FF",
+			"lat": 49.02047953977261,
+			"lng": 8.422067239880564,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": 1,
+			"rotation": 59.9703707982205
+		},
+		{
+			"name": "1x2m Tisch",
+			"category": "Tische",
+			"color": "#0000FF",
+			"lat": 49.020496249925664,
+			"lng": 8.42210914939642,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": 1,
+			"rotation": 59.20633545947629
+		},
+		{
+			"name": "1x2m Tisch",
+			"category": "Tische",
+			"color": "#0000FF",
+			"lat": 49.02051296007306,
+			"lng": 8.422154746949673,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": 1,
+			"rotation": 59.0518875002773
+		},
+		{
+			"name": "Kühlschrank",
+			"category": "Kühlgeräte",
+			"color": "#2f4f4f",
+			"lat": 49.02050504474088,
+			"lng": 8.4221326187253,
+			"type": "Rectangle",
+			"xSize": 1,
+			"ySize": 1,
+			"rotation": -29.01446272091107
+		},
+		{
+			"name": "Kühlschrank",
+			"category": "Kühlgeräte",
+			"color": "#2f4f4f",
+			"lat": 49.02048789484986,
+			"lng": 8.422087021172047,
+			"type": "Rectangle",
+			"xSize": 1,
+			"ySize": 1,
+			"rotation": -29.01446272091107
+		},
+		{
+			"name": "Biergarnitur",
+			"category": "Biergarnituren",
+			"color": "#ffa500",
+			"lat": 49.02039862885411,
+			"lng": 8.422135971486568,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": "1.2",
+			"rotation": -29.118234534123985
+		},
+		{
+			"name": "Biergarnitur",
+			"category": "Biergarnituren",
+			"color": "#ffa500",
+			"lat": 49.02038170557026,
+			"lng": 8.422150053083897,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": "1.2",
+			"rotation": -29.118234534123985
+		},
+		{
+			"name": "Biergarnitur",
+			"category": "Biergarnituren",
+			"color": "#ffa500",
+			"lat": 49.02038676260092,
+			"lng": 8.422168157994747,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": "1.2",
+			"rotation": -29.118234534123985
+		},
+		{
+			"name": "Biergarnitur",
+			"category": "Biergarnituren",
+			"color": "#ffa500",
+			"lat": 49.02040501188075,
+			"lng": 8.422153741121292,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": "1.2",
+			"rotation": -29.118234534123985
+		},
+		{
+			"name": "Biergarnitur",
+			"category": "Biergarnituren",
+			"color": "#ffa500",
+			"lat": 49.02042194192958,
+			"lng": 8.422272093594074,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": "1.2",
+			"rotation": -29.118234534123985
+		},
+		{
+			"name": "Biergarnitur",
+			"category": "Biergarnituren",
+			"color": "#ffa500",
+			"lat": 49.020440630937884,
+			"lng": 8.422257006168365,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": "1.2",
+			"rotation": -29.118234534123985
+		},
+		{
+			"name": "Kabel",
+			"category": "Strom",
+			"color": "#000000",
+			"lat": 49.02038377379813,
+			"lng": 8.422081321477892,
+			"type": "Cable",
+			"latLngs": [
+				{
+					"lat": 49.02020273033351,
+					"lng": 8.421997837722303
+				},
+				{
+					"lat": 49.020207876663086,
+					"lng": 8.42203052714467
+				},
+				{
+					"lat": 49.020306313784765,
+					"lng": 8.422047542408109
+				},
+				{
+					"lat": 49.02031881388638,
+					"lng": 8.42206879053265
+				},
+				{
+					"lat": 49.02034815040925,
+					"lng": 8.422078073490413
+				},
+				{
+					"lat": 49.02046483871304,
+					"lng": 8.422026388579981
+				},
+				{
+					"lat": 49.02047313074081,
+					"lng": 8.422047793865206
+				}
+			],
+			"length": "45",
+			"current": "16A"
+		},
+		{
+			"name": "Kabel",
+			"category": "Strom",
+			"color": "#000000",
+			"lat": 49.02038377379813,
+			"lng": 8.422081321477892,
+			"type": "Cable",
+			"latLngs": [
+				{
+					"lat": 49.02015049977978,
+					"lng": 8.422087356448175
+				},
+				{
+					"lat": 49.020187747406645,
+					"lng": 8.422092553228142
+				},
+				{
+					"lat": 49.02022593801888,
+					"lng": 8.42213870608248
+				}
+			],
+			"length": "20",
+			"current": "32A"
+		},
+		{
+			"name": "6x12m Zelt (HaDiKo)",
+			"category": "Zelte",
+			"color": "#ffffff",
+			"lat": 49.020260567798545,
+			"lng": 8.422201685607416,
+			"type": "Rectangle",
+			"xSize": 12,
+			"ySize": 6,
+			"rotation": 44.6557732262334
+		},
+		{
+			"name": "Bühne",
+			"category": "Bühne",
+			"color": "#808080",
+			"lat": 49.02023308386045,
+			"lng": 8.42215206474068,
+			"type": "Rectangle",
+			"xSize": "2",
+			"ySize": "2",
+			"rotation": -45.158142627207994
+		},
+		{
+			"name": "Kabel",
+			"category": "Strom",
+			"color": "#000000",
+			"lat": 49.020332063475344,
+			"lng": 8.422509327647276,
+			"type": "Cable",
+			"latLngs": [
+				{
+					"lat": 49.02030181994188,
+					"lng": 8.422487676143648
+				},
+				{
+					"lat": 49.02030432795542,
+					"lng": 8.42240234836936
+				},
+				{
+					"lat": 49.02026776240396,
+					"lng": 8.42239820980467
+				}
+			],
+			"length": "10",
+			"current": "16A"
+		},
+		{
+			"name": "Biertheke",
+			"category": "Biergarnituren",
+			"color": "#ff0000",
+			"lat": 49.02030653816833,
+			"lng": 8.422360941767693,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": 0.5,
+			"rotation": -177.98646639225205
+		},
+		{
+			"name": "Biertheke",
+			"category": "Biergarnituren",
+			"color": "#ff0000",
+			"lat": 49.02024453444087,
+			"lng": 8.422356583178043,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": 0.5,
+			"rotation": -177.98646639225205
+		},
+		{
+			"name": "Biertheke",
+			"category": "Biergarnituren",
+			"color": "#ff0000",
+			"lat": 49.020213523269874,
+			"lng": 8.422310985624792,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": 0.5,
+			"rotation": -109.7893475935605
+		},
+		{
+			"name": "Treppe",
+			"category": "Treppe",
+			"color": "#808080",
+			"lat": 49.02034612333262,
+			"lng": 8.422417603433132,
+			"type": "Rectangle",
+			"xSize": "0.7",
+			"ySize": "0.22",
+			"rotation": 2.419942968418198
+		},
+		{
+			"name": "Treppe",
+			"category": "Treppe",
+			"color": "#808080",
+			"lat": 49.02034612333246,
+			"lng": 8.422421626746655,
+			"type": "Rectangle",
+			"xSize": "0.7",
+			"ySize": "0.22",
+			"rotation": 2.419942968418198
+		},
+		{
+			"name": "Sub",
+			"category": "Bühne",
+			"color": "#000000",
+			"lat": 49.02025179391838,
+			"lng": 8.422153741121294,
+			"type": "Rectangle",
+			"xSize": "0.8",
+			"ySize": "0.8",
+			"rotation": -45.158142627207994
+		},
+		{
+			"name": "Sub",
+			"category": "Bühne",
+			"color": "#000000",
+			"lat": 49.02023376445388,
+			"lng": 8.42218089848757,
+			"type": "Rectangle",
+			"xSize": "0.8",
+			"ySize": "0.8",
+			"rotation": -45.158142627207994
+		},
+		{
+			"name": "Sub",
+			"category": "Bühne",
+			"color": "#000000",
+			"lat": 49.02023970098557,
+			"lng": 8.422171846032143,
+			"type": "Rectangle",
+			"xSize": "0.8",
+			"ySize": "0.8",
+			"rotation": -45.158142627207994
+		},
+		{
+			"name": "Sub",
+			"category": "Bühne",
+			"color": "#000000",
+			"lat": 49.02024585738808,
+			"lng": 8.42216245830059,
+			"type": "Rectangle",
+			"xSize": "0.8",
+			"ySize": "0.8",
+			"rotation": -45.158142627207994
+		},
+		{
+			"name": "Top",
+			"category": "Bühne",
+			"color": "#0000ff",
+			"lat": 49.02025157404698,
+			"lng": 8.422154076397419,
+			"type": "Rectangle",
+			"xSize": "0.5",
+			"ySize": "0.5",
+			"rotation": -45.158142627207994
+		},
+		{
+			"name": "Top",
+			"category": "Bühne",
+			"color": "#0000ff",
+			"lat": 49.020233764453835,
+			"lng": 8.422180898487568,
+			"type": "Rectangle",
+			"xSize": "0.5",
+			"ySize": "0.5",
+			"rotation": -45.158142627207994
+		},
+		{
+			"name": "Traverse",
+			"category": "Bühne",
+			"color": "#808080",
+			"lat": 49.02023156573836,
+			"lng": 8.42214535921812,
+			"type": "Rectangle",
+			"xSize": "4",
+			"ySize": "0.01",
+			"rotation": -45.158142627207994
+		}
+	],
+	"map": {
+		"lat": 49.02034038663927,
+		"lng": 8.422285169363024,
+		"zoom": 22
+	}
+}
