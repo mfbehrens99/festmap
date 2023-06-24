@@ -642,10 +642,12 @@ class ItemManager {
 		this.map.on('keydown', function (e) {
 			var key = e.originalEvent.key;
 			var metaKey = e.originalEvent.metaKey; // CTRL on Windows/Linux, CMD on Apple
+			var anySelected = itemManager.getSelected().length > 0;
+
 			if (key === "Escape") {
 				itemManager.deselect();
 			}
-			else if (key === "c" && metaKey) {
+			else if (key === "c" && metaKey && anySelected) {
 				// Copy
 				itemManager.copy();
 			}
@@ -655,11 +657,11 @@ class ItemManager {
 				let position = itemManager.map.getCenter();
 				itemManager.paste(position);
 			}
-			else if (key === "x" && metaKey) {
+			else if (key === "x" && metaKey && anySelected) {
 				// Cut
 				itemManager.copy();
 				itemManager.addRevertStep();
-				itemManager.deleteItem(itemManager.selected);
+				itemManager.getSelected().forEach((item) => {itemManager.deleteItem(item);});
 			}
 			else if (key === "z" && metaKey) {
 				// Revert
@@ -669,7 +671,7 @@ class ItemManager {
 				// Repeat
 				itemManager.repeat();
 			}
-			else if (key === "Delete" && itemManager.getSelected().length > 0) {
+			else if (key === "Delete" && anySelected) {
 				// Delete
 				itemManager.addRevertStep();
 				itemManager.getSelected().forEach((item) => {itemManager.deleteItem(item);});
@@ -1016,11 +1018,11 @@ L.Control.ItemAddControl = L.Control.extend({
 			btn.style.color = getTextColor(item.color);
 			btn.appendChild(t);
 			btn.addEventListener("click", (event) => {
+				objects.addRevertStep();
 				let center = map.getCenter();
 				data.lat = center.lat;
 				data.lng = center.lng;
 				objects.addItem(data);
-				objects.addRevertStep();
 			});
 		});
 
@@ -1099,3 +1101,4 @@ else {
 
 	objects.import(data);
 }
+
