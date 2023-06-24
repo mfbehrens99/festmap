@@ -14,6 +14,23 @@ function calculateRotationAngle(latlngPivot, latlngMouse) {
 }
 
 
+// Convert hex color of form "#000000" to [0, 0, 0]
+function hexToRgb(hex){
+    if (/^#([A-Fa-f0-9]{6})$/.test(hex)) {
+        var c = "0x" + hex.substring(1);
+        return [(c >> 16) & 255, (c >> 8) & 255, c & 255];
+    }
+    return [0, 0, 0];
+}
+
+// Black for bright backgroundColor, white for dark backgroundColor
+function getTextColor(backgroundColor) {
+	var colorArr = hexToRgb(backgroundColor);
+	var colorGrey = (colorArr[0] + colorArr[1] + colorArr[2]) / 3.0;
+	return colorGrey < 100 ? "#fff" : "#000"; // Threshold
+}
+
+
 // Map Items
 class MapItem {
 	constructor(itemManager, data) {
@@ -996,6 +1013,7 @@ L.Control.ItemAddControl = L.Control.extend({
 			let btn = L.DomUtil.create('button', '', el);
 			var t = document.createTextNode(item.name);
 			btn.style.backgroundColor = item.color;
+			btn.style.color = getTextColor(item.color);
 			btn.appendChild(t);
 			btn.addEventListener("click", (event) => {
 				let center = map.getCenter();
