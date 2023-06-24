@@ -672,7 +672,7 @@ class ItemManager {
 				// Repeat
 				itemManager.repeat();
 			}
-			else if (key === "Delete" && anySelected) {
+			else if ((key === "Delete" || key == "Backspace") && anySelected) {
 				// Delete
 				itemManager.addRevertStep();
 				itemManager.getSelected().forEach((item) => {itemManager.deleteItem(item);});
