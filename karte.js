@@ -781,6 +781,17 @@ class ItemManager {
 		item.leafletItem.removeFrom(categoryLayers[item.category]);
 	};
 
+	deleteAllCategories() {
+		var layers = Object.values(categoryLayers);
+		if (layers.length == 0) {
+			return;
+		}
+		layers.forEach((category) => {
+			layerControl.removeLayer(category);
+		});
+		categoryLayers = {};
+	};
+
 	deleteItem(item) {
 		item.deselect();
 		this.removeFromCategory(item);
@@ -791,8 +802,8 @@ class ItemManager {
 		this.items.forEach((item) => {
 			item.delete();
 		})
-		categoryLayers = {};
 		this.items = [];
+		this.deleteAllCategories();
 	};
 
 	copy() {
