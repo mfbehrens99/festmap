@@ -642,6 +642,7 @@ class ItemManager {
 		this.map.on('keydown', function (e) {
 			var key = e.originalEvent.key;
 			var metaKey = e.originalEvent.metaKey; // CTRL on Windows/Linux, CMD on Apple
+			var shiftKey = e.originalEvent.shiftKey;
 			var anySelected = itemManager.getSelected().length > 0;
 
 			if (key === "Escape") {
@@ -663,11 +664,11 @@ class ItemManager {
 				itemManager.addRevertStep();
 				itemManager.getSelected().forEach((item) => {itemManager.deleteItem(item);});
 			}
-			else if (key === "z" && metaKey) {
+			else if (key === "z" && metaKey && !shiftKey) {
 				// Revert
 				itemManager.revert();
 			}
-			else if (key === "y" && metaKey) {
+			else if ((key === "y" && metaKey) || (key === "z" && metaKey && shiftKey)) {
 				// Repeat
 				itemManager.repeat();
 			}
