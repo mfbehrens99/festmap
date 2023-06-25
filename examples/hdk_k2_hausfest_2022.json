@@ -23,36 +23,36 @@
 			"rotation": 60.76020663882312
 		},
 		{
-			"name": "Sonnenschirm",
+			"name": "Pavillon",
 			"category": "Zelte",
-			"color": "#FFFF00",
-			"lat": 49.02030498180879,
-			"lng": 8.422381728887558,
+			"color": "#ffffff",
+			"lat": 49.020304981808806,
+			"lng": 8.422378376126291,
 			"type": "Rectangle",
-			"xSize": "4",
-			"ySize": "4",
+			"xSize": "3",
+			"ySize": "3",
 			"rotation": 2.29472901282719
 		},
 		{
-			"name": "Sonnenschirm",
+			"name": "Pavillon",
 			"category": "Zelte",
-			"color": "#FFFF00",
-			"lat": 49.02024231851976,
-			"lng": 8.422377035021782,
+			"color": "#ffffff",
+			"lat": 49.020243637748884,
+			"lng": 8.422370329499245,
 			"type": "Rectangle",
-			"xSize": "4",
-			"ySize": "4",
+			"xSize": "3",
+			"ySize": "3",
 			"rotation": 2.29472901282719
 		},
 		{
-			"name": "Sonnenschirm",
+			"name": "Pavillon",
 			"category": "Zelte",
-			"color": "#FFFF00",
+			"color": "#ffffff",
 			"lat": 49.020201642272326,
 			"lng": 8.42231970280409,
 			"type": "Rectangle",
-			"xSize": "4",
-			"ySize": "4",
+			"xSize": "3",
+			"ySize": "3",
 			"rotation": 70.76755785845316
 		},
 		{
@@ -296,17 +296,6 @@
 			"current": "32A"
 		},
 		{
-			"name": "6x12m Zelt (HaDiKo)",
-			"category": "Zelte",
-			"color": "#ffffff",
-			"lat": 49.020260567798545,
-			"lng": 8.422201685607416,
-			"type": "Rectangle",
-			"xSize": 12,
-			"ySize": 6,
-			"rotation": 44.6557732262334
-		},
-		{
 			"name": "Bühne",
 			"category": "Bühne",
 			"color": "#808080",
@@ -346,7 +335,7 @@
 			"category": "Biergarnituren",
 			"color": "#ff0000",
 			"lat": 49.02030653816833,
-			"lng": 8.422360941767693,
+			"lng": 8.422366306185724,
 			"type": "Rectangle",
 			"xSize": 2,
 			"ySize": 0.5,
@@ -367,8 +356,8 @@
 			"name": "Biertheke",
 			"category": "Biergarnituren",
 			"color": "#ff0000",
-			"lat": 49.020213523269874,
-			"lng": 8.422310985624792,
+			"lat": 49.02021000532341,
+			"lng": 8.422314338386059,
 			"type": "Rectangle",
 			"xSize": 2,
 			"ySize": 0.5,
@@ -422,8 +411,8 @@
 			"name": "Sub",
 			"category": "Bühne",
 			"color": "#000000",
-			"lat": 49.02023970098557,
-			"lng": 8.422171846032143,
+			"lat": 49.020233104839264,
+			"lng": 8.422181233763695,
 			"type": "Rectangle",
 			"xSize": "0.8",
 			"ySize": "0.8",
@@ -433,8 +422,8 @@
 			"name": "Sub",
 			"category": "Bühne",
 			"color": "#000000",
-			"lat": 49.02024585738808,
-			"lng": 8.42216245830059,
+			"lat": 49.020251574046995,
+			"lng": 8.422153741121292,
 			"type": "Rectangle",
 			"xSize": "0.8",
 			"ySize": "0.8",
@@ -472,11 +461,183 @@
 			"xSize": "4",
 			"ySize": "0.01",
 			"rotation": -45.158142627207994
+		},
+		{
+			"name": "Kabel",
+			"category": "Strom",
+			"color": "#000000",
+			"lat": 49.020342015483074,
+			"lng": 8.42202487983741,
+			"type": "Cable",
+			"latLngs": [
+				{
+					"lat": 49.02020681499396,
+					"lng": 8.421984761953356
+				},
+				{
+					"lat": 49.020211961334404,
+					"lng": 8.422017451375723
+				},
+				{
+					"lat": 49.020310398664115,
+					"lng": 8.422034466639161
+				},
+				{
+					"lat": 49.02032289879204,
+					"lng": 8.422055714763703
+				},
+				{
+					"lat": 49.02035223537682,
+					"lng": 8.422064997721465
+				},
+				{
+					"lat": 49.02046892392706,
+					"lng": 8.422013312811032
+				},
+				{
+					"lat": 49.02051151575576,
+					"lng": 8.422120548784735
+				}
+			],
+			"length": "60",
+			"current": "16A"
+		},
+		{
+			"name": "Biergarnitur",
+			"category": "Biergarnituren",
+			"color": "#ffa500",
+			"lat": 49.020400737854544,
+			"lng": 8.422210738062859,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": "1.2",
+			"rotation": -29.118234534123985
+		},
+		{
+			"name": "Biergarnitur",
+			"category": "Biergarnituren",
+			"color": "#ffa500",
+			"lat": 49.020409092945044,
+			"lng": 8.422231525182724,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": "1.2",
+			"rotation": -29.118234534123985
+		},
+		{
+			"name": "Biergarnitur",
+			"category": "Biergarnituren",
+			"color": "#ffa500",
+			"lat": 49.020415689068116,
+			"lng": 8.422251641750336,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": "1.2",
+			"rotation": -29.118234534123985
+		},
+		{
+			"name": "Biergarnitur",
+			"category": "Biergarnituren",
+			"color": "#ffa500",
+			"lat": 49.020420086483085,
+			"lng": 8.422195315361023,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": "1.2",
+			"rotation": -29.118234534123985
+		},
+		{
+			"name": "Biergarnitur",
+			"category": "Biergarnituren",
+			"color": "#ffa500",
+			"lat": 49.02042624286317,
+			"lng": 8.422214761376381,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": "1.2",
+			"rotation": -29.118234534123985
+		},
+		{
+			"name": "Biergarnitur",
+			"category": "Biergarnituren",
+			"color": "#ffa500",
+			"lat": 49.02043327872548,
+			"lng": 8.422234877943993,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": "1.2",
+			"rotation": -29.118234534123985
+		},
+		{
+			"name": "Biergarnitur",
+			"category": "Biergarnituren",
+			"color": "#ffa500",
+			"lat": 49.02039414172944,
+			"lng": 8.4221912920475,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": "1.2",
+			"rotation": -29.118234534123985
+		},
+		{
+			"name": "Biergarnitur",
+			"category": "Biergarnituren",
+			"color": "#ffa500",
+			"lat": 49.020412171136044,
+			"lng": 8.422175198793411,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": "1.2",
+			"rotation": -29.118234534123985
+		},
+		{
+			"name": "Pavillon",
+			"category": "Zelte",
+			"color": "#ffffff",
+			"lat": 49.02016329280927,
+			"lng": 8.422374352812767,
+			"type": "Rectangle",
+			"xSize": "3",
+			"ySize": "3",
+			"rotation": 2.29472901282719
+		},
+		{
+			"name": "Biertheke",
+			"category": "Biergarnituren",
+			"color": "#ff0000",
+			"lat": 49.02016373255305,
+			"lng": 8.422360271215439,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": 0.5,
+			"rotation": -177.98646639225205
+		},
+		{
+			"name": "Biertheke",
+			"category": "Biergarnituren",
+			"color": "#ff0000",
+			"lat": 49.02016021460294,
+			"lng": 8.422389775514603,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": 0.5,
+			"rotation": -177.98646639225205
+		},
+		{
+			"name": "1x2m Tisch",
+			"category": "Tische",
+			"color": "#0000FF",
+			"lat": 49.020162413321586,
+			"lng": 8.422375693917274,
+			"type": "Rectangle",
+			"xSize": 2,
+			"ySize": 1,
+			"rotation": 2.6514221232941253
 		}
 	],
 	"map": {
-		"lat": 49.02034038663927,
-		"lng": 8.422285169363024,
-		"zoom": 22
+		"lat": 49.02018487094863,
+		"lng": 8.422490358352663,
+		"zoom": 21
 	}
 }
