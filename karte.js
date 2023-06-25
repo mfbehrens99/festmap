@@ -1059,12 +1059,21 @@ L.Control.GitHubControl = L.Control.extend({
 });
 
 L.Control.ExportControl = L.Control.extend({
+	select_load: null,
+	btn_load: null,
+	btn_delete: null,
+
 	onAdd: function (map) {
 		var el = L.DomUtil.create('div', 'leaflet-bar export-control');
 
-		let btn_import = L.DomUtil.create('button', '', el);
-		var t_import = document.createTextNode('Import');
-		btn_import.appendChild(t_import);
+		L.DomUtil.create('h4', '', el).appendChild(document.createTextNode('Import/Export using text'));
+
+		let form_importExport = L.DomUtil.create('form', '', el);
+		form_importExport.addEventListener("submit", (event) => {
+			event.preventDefault();
+		});
+		let btn_import = L.DomUtil.create('button', '', form_importExport);
+		btn_import.appendChild(document.createTextNode('Import'));
 
 		btn_import.addEventListener("click", (event) => {
 			var data = JSON.parse(prompt("Exportierte JSON eingeben!"));
@@ -1073,25 +1082,92 @@ L.Control.ExportControl = L.Control.extend({
 			objects.import(data)
 		});
 
-		let btn_export = L.DomUtil.create('button', '', el);
-		var t_export = document.createTextNode('Export');
-		btn_export.appendChild(t_export);
+		let btn_export = L.DomUtil.create('button', '', form_importExport);
+		btn_export.appendChild(document.createTextNode('Export'));
 
 		btn_export.addEventListener("click", (event) => {
 			var json = objects.export();
 			window.open("data:text/json;charset=utf-8," + encodeURIComponent(json), "", "_blank")
 		});
 
-		let btn_save = L.DomUtil.create('button', '', el);
-		var t = document.createTextNode('Save');
-		btn_save.appendChild(t);
+		L.DomUtil.create('h4', '', el).appendChild(document.createTextNode('Load/Save using localStorage'));
 
-		btn_save.addEventListener("click", (event) => {
+		let form_save = L.DomUtil.create('form', '', el);
+		let input_save = L.DomUtil.create('input', '', form_save);
+		input_save.setAttribute("placeholder", "save name")
+		let btn_save = L.DomUtil.create('input', '', form_save);
+		btn_save.setAttribute("type", "submit")
+		btn_save.value = 'Save';
+
+		form_save.addEventListener("submit", (event) => {
+			event.preventDefault(); // to prevent page load
 			var data = objects.export();
-			localStorage.setItem("jsondata", data);
+			var saveName = input_save.value;
+			localStorage.setItem(saveName, data);
+			this.updateLoadSelect();
+			this.select_load.value = saveName
 		});
 
+		let form_load = L.DomUtil.create('form', '', el);
+		this.select_load = L.DomUtil.create('select', '', form_load);
+		this.btn_load = L.DomUtil.create('input', '', form_load);
+		this.btn_load.setAttribute("type", "submit")
+		this.btn_load.value = 'Load';
+		form_load.addEventListener("submit", (event) => {
+			event.preventDefault(); // to prevent page load
+			saveName = this.select_load.value;
+
+			var jsonRaw = localStorage.getItem(saveName);
+
+			try {
+				var json = JSON.parse(jsonRaw);
+				if (json != null) {
+					objects.import(json);
+				} else {
+					throw new SyntaxError("JSON seems to be empty:");
+				}
+			} catch (e) {
+				alert("Save '" + saveName + "' might be corrupted:\n\n" + e.message + "\n\n" + jsonRaw);
+			}
+		});
+
+
+		this.btn_delete = L.DomUtil.create('button', '', form_load);
+		this.btn_delete.appendChild(document.createTextNode('Delete'));
+
+		this.btn_delete.addEventListener("click", (event) => {
+			saveName = this.select_load.value;
+			if (confirm("Delete save '" + saveName + "'?")) {
+				localStorage.removeItem(saveName)
+				this.updateLoadSelect();
+			}
+		});
+
+		this.updateLoadSelect();
 		return el;
+	},
+
+	updateLoadSelect() {
+		this.select_load.innerHTML = '';
+
+		var option = L.DomUtil.create('option', '', this.select_load);
+		option.setAttribute("value", "");
+		option.disabled = true;
+		option.selected = true;
+		option.appendChild(document.createTextNode("Select save..."));
+
+
+		for (var i = 0; i < localStorage.length; i++) {
+			var saveName = localStorage.key(i);
+
+			var option = L.DomUtil.create('option', '', this.select_load);
+			option.setAttribute("value", saveName);
+			option.appendChild(document.createTextNode(saveName));
+		}
+		
+		var noSaves = localStorage.length == 0;
+		this.btn_load.disabled = noSaves;
+		this.btn_delete.disabled = noSaves;
 	},
 
 	onRemove: function (map) { }
@@ -1116,17 +1192,6 @@ let infoBox = new L.Control.InfoControl({ position: 'bottomleft' }).addTo(map);
 let github = new L.Control.GitHubControl({ position: 'topleft' }).addTo(map);
 
 if (typeof data !== 'undefined') {
-	objects.import(data);
-}
-else {
-	let data = [];
-	var memoryJSON = JSON.parse(localStorage.getItem("jsondata"));
-	if (memoryJSON != null) {
-		if (confirm("Möchtest du deine letzten Kartendaten wiederherstellen?")) {
-			data = memoryJSON;
-		}
-	}
-
 	objects.import(data);
 }
 

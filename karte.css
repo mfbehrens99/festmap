@@ -43,3 +43,21 @@
     20%, 60% {transform:rotate(-25deg)}
     40%, 80% {transform:rotate(10deg)}
 }
+
+
+form {
+    margin-bottom: 0.5em;
+}
+form:last-child {
+    margin-bottom: 0;
+}
+form > * {
+    margin-right: 0.5em;
+}
+form > *:last-child {
+    margin-right: 0;
+}
+
+h4 {
+    margin: 0;
+}
