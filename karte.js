@@ -13,6 +13,20 @@ function calculateRotationAngle(latlngPivot, latlngMouse) {
 	return Math.atan2(dx, dy) * (180 / Math.PI);
 }
 
+function countItems(list) {
+	var count = {};
+  
+	list.forEach(function(item) {
+	  if (count[item]) {
+		count[item]++;
+	  } else {
+		count[item] = 1;
+	  }
+	});
+  
+	return count;
+  }
+
 
 // Convert hex color of form "#000000" to [0, 0, 0]
 function hexToRgb(hex){
@@ -49,6 +63,10 @@ class MapItem {
 		}
 		this.lat = data.lat;
 		this.lng = data.lng;
+		if (data.material == null) {
+			data.material = [];
+		}
+		this.material = data.material;
 		this.leafletItem = {};
 		this.selected = false;
 	};
@@ -143,6 +161,7 @@ class MapItem {
 			color: this.color,
 			lat: this.lat,
 			lng: this.lng,
+			material: this.material,
 		}
 	};
 
@@ -207,6 +226,15 @@ class MapItem {
 
 		return tbl;
 	};
+
+	getMaterial() {
+		if (this.material.length == 0) {
+			return [this.name];
+		}
+		else {
+			return this.material;
+		}
+	}
 };
 
 class MarkerItem extends MapItem {
@@ -852,7 +880,7 @@ class ItemManager {
 		this.revertIndex++;
 		this.deleteAllItems();
 		this.import(JSON.parse(this.revertSteps[this.revertSteps.length - this.revertIndex - 1]));
-	}
+	};
 
 	repeat() {
 		if (this.revertIndex < 1) {
@@ -861,6 +889,20 @@ class ItemManager {
 		this.revertIndex--;
 		this.deleteAllItems();
 		this.import(JSON.parse(this.revertSteps[this.revertSteps.length - this.revertIndex - 1]));
+	};
+
+	getMaterialList() {
+		var materials = [];
+		this.items.forEach((item) => {
+			materials = materials.concat(item.getMaterial());
+		});
+		var materialList = countItems(materials);
+		var result = "";
+		for (const item in materialList)
+		{
+			result += materialList[item] + "x " + item + "\n";
+		}
+		return result;
 	}
 }
 
