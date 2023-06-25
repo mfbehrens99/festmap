@@ -641,34 +641,34 @@ class ItemManager {
 		// Hotkeys
 		this.map.on('keydown', function (e) {
 			var key = e.originalEvent.key;
-			var metaKey = e.originalEvent.metaKey; // CTRL on Windows/Linux, CMD on Apple
+			var ctrlKey = e.originalEvent.ctrlKey || e.originalEvent.metaKey; // CTRL on Windows/Linux, CMD on Apple
 			var shiftKey = e.originalEvent.shiftKey;
 			var anySelected = itemManager.getSelected().length > 0;
 
 			if (key === "Escape") {
 				itemManager.deselect();
 			}
-			else if (key === "c" && metaKey && anySelected) {
+			else if (key === "c" && ctrlKey && anySelected) {
 				// Copy
 				itemManager.copy();
 			}
-			else if (key === "v" && metaKey) {
+			else if (key === "v" && ctrlKey) {
 				// Paste
 				itemManager.addRevertStep();
 				let position = itemManager.map.getCenter();
 				itemManager.paste(position);
 			}
-			else if (key === "x" && metaKey && anySelected) {
+			else if (key === "x" && ctrlKey && anySelected) {
 				// Cut
 				itemManager.copy();
 				itemManager.addRevertStep();
 				itemManager.getSelected().forEach((item) => {itemManager.deleteItem(item);});
 			}
-			else if (key === "z" && metaKey && !shiftKey) {
+			else if (key === "z" && ctrlKey && !shiftKey) {
 				// Revert
 				itemManager.revert();
 			}
-			else if ((key === "y" && metaKey) || (key === "z" && metaKey && shiftKey)) {
+			else if ((key === "y" && ctrlKey) || (key === "z" && ctrlKey && shiftKey)) {
 				// Repeat
 				itemManager.repeat();
 			}
