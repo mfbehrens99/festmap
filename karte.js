@@ -14,6 +14,23 @@ function calculateRotationAngle(latlngPivot, latlngMouse) {
 }
 
 
+// Convert hex color of form "#000000" to [0, 0, 0]
+function hexToRgb(hex){
+    if (/^#([A-Fa-f0-9]{6})$/.test(hex)) {
+        var c = "0x" + hex.substring(1);
+        return [(c >> 16) & 255, (c >> 8) & 255, c & 255];
+    }
+    return [0, 0, 0];
+}
+
+// Black for bright backgroundColor, white for dark backgroundColor
+function getTextColor(backgroundColor) {
+	var colorArr = hexToRgb(backgroundColor);
+	var colorGrey = (colorArr[0] + colorArr[1] + colorArr[2]) / 3.0;
+	return colorGrey < 100 ? "#fff" : "#000"; // Threshold
+}
+
+
 // Map Items
 class MapItem {
 	constructor(itemManager, data) {
@@ -624,34 +641,38 @@ class ItemManager {
 		// Hotkeys
 		this.map.on('keydown', function (e) {
 			var key = e.originalEvent.key;
+			var ctrlKey = e.originalEvent.ctrlKey || e.originalEvent.metaKey; // CTRL on Windows/Linux, CMD on Apple
+			var shiftKey = e.originalEvent.shiftKey;
+			var anySelected = itemManager.getSelected().length > 0;
+
 			if (key === "Escape") {
 				itemManager.deselect();
 			}
-			else if (key === "c" && e.originalEvent.ctrlKey) {
+			else if (key === "c" && ctrlKey && anySelected) {
 				// Copy
 				itemManager.copy();
 			}
-			else if (key === "v" && e.originalEvent.ctrlKey) {
+			else if (key === "v" && ctrlKey) {
 				// Paste
 				itemManager.addRevertStep();
 				let position = itemManager.map.getCenter();
 				itemManager.paste(position);
 			}
-			else if (key === "x" && e.originalEvent.ctrlKey) {
+			else if (key === "x" && ctrlKey && anySelected) {
 				// Cut
 				itemManager.copy();
 				itemManager.addRevertStep();
-				itemManager.deleteItem(itemManager.selected);
+				itemManager.getSelected().forEach((item) => {itemManager.deleteItem(item);});
 			}
-			else if (key === "z" && e.originalEvent.ctrlKey) {
+			else if (key === "z" && ctrlKey && !shiftKey) {
 				// Revert
 				itemManager.revert();
 			}
-			else if (key === "y" && e.originalEvent.ctrlKey) {
+			else if ((key === "y" && ctrlKey) || (key === "z" && ctrlKey && shiftKey)) {
 				// Repeat
 				itemManager.repeat();
 			}
-			else if (key === "Delete" && itemManager.getSelected().length > 0) {
+			else if ((key === "Delete" || key == "Backspace") && anySelected) {
 				// Delete
 				itemManager.addRevertStep();
 				itemManager.getSelected().forEach((item) => {itemManager.deleteItem(item);});
@@ -760,6 +781,17 @@ class ItemManager {
 		item.leafletItem.removeFrom(categoryLayers[item.category]);
 	};
 
+	deleteAllCategories() {
+		var layers = Object.values(categoryLayers);
+		if (layers.length == 0) {
+			return;
+		}
+		layers.forEach((category) => {
+			layerControl.removeLayer(category);
+		});
+		categoryLayers = {};
+	};
+
 	deleteItem(item) {
 		item.deselect();
 		this.removeFromCategory(item);
@@ -768,10 +800,11 @@ class ItemManager {
 
 	deleteAllItems() {
 		this.items.forEach((item) => {
+			if (item == null) {return;}
 			item.delete();
 		})
-		categoryLayers = {};
 		this.items = [];
+		this.deleteAllCategories();
 	};
 
 	copy() {
@@ -995,16 +1028,30 @@ L.Control.ItemAddControl = L.Control.extend({
 			let btn = L.DomUtil.create('button', '', el);
 			var t = document.createTextNode(item.name);
 			btn.style.backgroundColor = item.color;
+			btn.style.color = getTextColor(item.color);
 			btn.appendChild(t);
 			btn.addEventListener("click", (event) => {
+				objects.addRevertStep();
 				let center = map.getCenter();
 				data.lat = center.lat;
 				data.lng = center.lng;
 				objects.addItem(data);
-				objects.addRevertStep();
 			});
 		});
 
+		return el;
+	},
+
+	onRemove: function (map) { }
+});
+
+L.Control.GitHubControl = L.Control.extend({
+	onAdd: function (map) {
+		var el = L.DomUtil.create('div', 'leaflet-bar github-control');
+		var a = L.DomUtil.create('a', 'github', el);
+		a.setAttribute("href", "https://github.com/mfbehrens99/festmap");
+		a.setAttribute("target", "_blank");
+		a.innerHTML = '<svg width="70" height="70" viewBox="0 0 250 250"><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" class="octo-body"></path></svg>';
 		return el;
 	},
 
@@ -1065,6 +1112,7 @@ L.Control.InfoControl = L.Control.extend({
 let itemAdd = new L.Control.ItemAddControl({ position: 'topright' }).addTo(map);
 let exportJson = new L.Control.ExportControl({ position: 'topright' }).addTo(map);
 let infoBox = new L.Control.InfoControl({ position: 'bottomleft' }).addTo(map);
+let github = new L.Control.GitHubControl({ position: 'topleft' }).addTo(map);
 
 if (typeof data !== 'undefined') {
 	objects.import(data);
@@ -1080,3 +1128,4 @@ else {
 
 	objects.import(data);
 }
+
