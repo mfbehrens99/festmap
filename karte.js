@@ -800,6 +800,7 @@ class ItemManager {
 
 	deleteAllItems() {
 		this.items.forEach((item) => {
+			if (item == null) {return;}
 			item.delete();
 		})
 		this.items = [];
