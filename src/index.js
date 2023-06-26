@@ -1,5 +1,6 @@
 import css from './styles/main.css';
 import L from "leaflet";
+import "leaflet.path.drag";
 
 // Utils
 function rotate(x, y, r) {
