@@ -81,7 +81,7 @@ class MapItem {
 
 	delete() {
 		this.deselect();
-		this.leafletItem.removeFrom(window.App.categoryLayers[this.category]);
+		this.leafletItem.removeFrom(this.itemManager.categoryLayers[this.category]);
 	};
 
 	select() {

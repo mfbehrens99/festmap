@@ -4,6 +4,7 @@ export default class ItemManager {
 	constructor(map) {
 		this.App = window.App;
 		this.map = map;
+		this.categoryLayers = {};
 		this.items = [];
 		this.copyItems = null;
 		this.revertSteps = [];
@@ -147,31 +148,30 @@ export default class ItemManager {
 	};
 
 	addToCategory(item) {
-		let categoryLayers = App.categoryLayers;
 		// Create new category layer if it does not already exist
-		if (!(item.category in categoryLayers)) {
-			categoryLayers[item.category] = L.layerGroup();
-			App.layerControl.addOverlay(categoryLayers[item.category], item.category);
-			categoryLayers[item.category].addTo(this.map);
+		if (!(item.category in this.categoryLayers)) {
+			this.categoryLayers[item.category] = L.layerGroup();
+			App.layerControl.addOverlay(this.categoryLayers[item.category], item.category);
+			this.categoryLayers[item.category].addTo(this.map);
 		}
 
 		// Add Item to category Layer
-		item.addTo(categoryLayers[item.category]);
+		item.addTo(this.categoryLayers[item.category]);
 	};
 
 	removeFromCategory(item) {
-		item.leafletItem.removeFrom(App.categoryLayers[item.category]);
+		item.leafletItem.removeFrom(this.categoryLayers[item.category]);
 	};
 
 	deleteAllCategories() {
-		var layers = Object.values(App.categoryLayers);
+		var layers = Object.values(this.categoryLayers);
 		if (layers.length == 0) {
 			return;
 		}
 		layers.forEach((category) => {
 			App.layerControl.removeLayer(category);
 		});
-		App.categoryLayers = {};
+		this.categoryLayers = {};
 	};
 
 	deleteItem(item) {

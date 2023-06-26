@@ -37,9 +37,8 @@ var baseMaps = {
 };
 
 let App = {}
-App.categoryLayers = {};
-App.layerControl = L.control.layers(baseMaps, App.categoryLayers).addTo(map);
 App.itemManager = new ItemManager(map);
+App.layerControl = L.control.layers(baseMaps, App.itemManager.categoryLayers).addTo(map);
 
 let itemAdd = new L.Control.ItemAddControl({ position: 'topright' }).addTo(map);
 let exportJson = new L.Control.ExportControl({ position: 'topright' }).addTo(map);
