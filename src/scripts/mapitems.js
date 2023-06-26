@@ -38,7 +38,7 @@ class MapItem {
 		// Dragging
 		const mapItem = this;
 		this.leafletItem.on('dragstart', function (e) {
-			itemManager.addRevertStep();
+			mapItem.itemManager.addRevertStep();
 		});
 		this.leafletItem.on('dragend', function (e) {
 			// Update the item whenever the polygon has been moved
