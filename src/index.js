@@ -1,3 +1,6 @@
+import css from './styles/main.css';
+import L from "leaflet";
+
 // Utils
 function rotate(x, y, r) {
 	r *= Math.PI / 180.0;
@@ -1157,7 +1160,7 @@ L.Control.ExportControl = L.Control.extend({
 		this.btn_load.value = 'Load';
 		form_load.addEventListener("submit", (event) => {
 			event.preventDefault(); // to prevent page load
-			saveName = this.select_load.value;
+			var saveName = this.select_load.value;
 
 			var jsonRaw = localStorage.getItem(saveName);
 
