@@ -21,11 +21,11 @@ L.Control.ItemAddControl = L.Control.extend({
 			btn.style.color = Utils.getTextColor(item.color);
 			btn.appendChild(t);
 			btn.addEventListener("click", (event) => {
-				objects.addRevertStep();
+				App.itemManager.addRevertStep();
 				let center = map.getCenter();
 				data.lat = center.lat;
 				data.lng = center.lng;
-				objects.addItem(data);
+				App.itemManager.addItem(data);
 			});
 		});
 
@@ -68,15 +68,15 @@ L.Control.ExportControl = L.Control.extend({
 		btn_import.addEventListener("click", (event) => {
 			var data = JSON.parse(prompt("Exportierte JSON eingeben!"));
 
-			objects.deleteAllItems();
-			objects.import(data)
+			App.itemManager.deleteAllItems();
+			App.itemManager.import(data)
 		});
 
 		let btn_export = L.DomUtil.create('button', '', form_importExport);
 		btn_export.appendChild(document.createTextNode('Export'));
 
 		btn_export.addEventListener("click", (event) => {
-			var json = objects.export();
+			var json = App.itemManager.export();
 			window.open("data:text/json;charset=utf-8," + encodeURIComponent(json), "", "_blank")
 		});
 
@@ -91,7 +91,7 @@ L.Control.ExportControl = L.Control.extend({
 
 		form_save.addEventListener("submit", (event) => {
 			event.preventDefault(); // to prevent page load
-			var data = objects.export();
+			var data = App.itemManager.export();
 			var saveName = input_save.value;
 			localStorage.setItem(saveName, data);
 			this.updateLoadSelect();
@@ -112,7 +112,7 @@ L.Control.ExportControl = L.Control.extend({
 			try {
 				var json = JSON.parse(jsonRaw);
 				if (json != null) {
-					objects.import(json);
+					App.itemManager.import(json);
 				} else {
 					throw new SyntaxError("JSON seems to be empty:");
 				}

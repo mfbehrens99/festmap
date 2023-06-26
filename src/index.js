@@ -36,19 +36,18 @@ var baseMaps = {
 	"OpenStreetMap": osm,
 };
 
-
-// Setup the Categories
-window.categoryLayers = {};
-window.layerControl = L.control.layers(baseMaps, categoryLayers).addTo(map);
-
-window.objects = new ItemManager(map);
+let App = {}
+App.categoryLayers = {};
+App.layerControl = L.control.layers(baseMaps, App.categoryLayers).addTo(map);
+App.itemManager = new ItemManager(map);
 
 let itemAdd = new L.Control.ItemAddControl({ position: 'topright' }).addTo(map);
 let exportJson = new L.Control.ExportControl({ position: 'topright' }).addTo(map);
-let infoBox = new L.Control.InfoControl({ position: 'bottomleft' }).addTo(map);
+App.infoBox = new L.Control.InfoControl({ position: 'bottomleft' }).addTo(map);
 let github = new L.Control.GitHubControl({ position: 'topleft' }).addTo(map);
 
-if (typeof data !== 'undefined') {
-	objects.import(data);
-}
+// if (typeof data !== 'undefined') {
+// 	App.itemManager.import(data);
+// }
 
+window.App = App;

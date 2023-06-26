@@ -2,6 +2,7 @@ import { Rectangle, Circle, Path, Cable, MarkerItems, Socket } from "./mapitems.
 
 export default class ItemManager {
 	constructor(map) {
+		this.App = window.App;
 		this.map = map;
 		this.items = [];
 		this.copyItems = null;
@@ -96,7 +97,7 @@ export default class ItemManager {
 	};
 
 	updateInfobox() {
-		var container = infoBox.getContainer();
+		var container = App.infoBox.getContainer();
 		container.innerHTML = '';
 		this.getSelected().forEach((item) => {
 			container.append(item.getInfoBox());
@@ -109,7 +110,7 @@ export default class ItemManager {
 			item.deselect();
 		});
 		// Hide Info Box
-		var container = infoBox.getContainer();
+		var container = App.infoBox.getContainer();
 		container.style.display = "none";
 	};
 
@@ -146,10 +147,11 @@ export default class ItemManager {
 	};
 
 	addToCategory(item) {
+		let categoryLayers = App.categoryLayers;
 		// Create new category layer if it does not already exist
 		if (!(item.category in categoryLayers)) {
 			categoryLayers[item.category] = L.layerGroup();
-			layerControl.addOverlay(categoryLayers[item.category], item.category);
+			App.layerControl.addOverlay(categoryLayers[item.category], item.category);
 			categoryLayers[item.category].addTo(this.map);
 		}
 
@@ -158,18 +160,18 @@ export default class ItemManager {
 	};
 
 	removeFromCategory(item) {
-		item.leafletItem.removeFrom(categoryLayers[item.category]);
+		item.leafletItem.removeFrom(App.categoryLayers[item.category]);
 	};
 
 	deleteAllCategories() {
-		var layers = Object.values(categoryLayers);
+		var layers = Object.values(App.categoryLayers);
 		if (layers.length == 0) {
 			return;
 		}
 		layers.forEach((category) => {
-			layerControl.removeLayer(category);
+			App.layerControl.removeLayer(category);
 		});
-		categoryLayers = {};
+		App.categoryLayers = {};
 	};
 
 	deleteItem(item) {

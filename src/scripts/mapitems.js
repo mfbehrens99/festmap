@@ -38,7 +38,7 @@ class MapItem {
 		// Dragging
 		const mapItem = this;
 		this.leafletItem.on('dragstart', function (e) {
-			objects.addRevertStep();
+			itemManager.addRevertStep();
 		});
 		this.leafletItem.on('dragend', function (e) {
 			// Update the item whenever the polygon has been moved
@@ -81,7 +81,7 @@ class MapItem {
 
 	delete() {
 		this.deselect();
-		this.leafletItem.removeFrom(categoryLayers[this.category]);
+		this.leafletItem.removeFrom(window.App.categoryLayers[this.category]);
 	};
 
 	select() {
@@ -223,7 +223,7 @@ export class Rectangle extends MapItem {
 
 		this.mouseDownHandler = (e) => {
 			if (e.originalEvent.button == 2) {
-				objects.addRevertStep();
+				itemManager.addRevertStep();
 			}
 			this.startRot = this.rotation - Utils.calculateRotationAngle(this.leafletItem.getBounds().getCenter(), e.latlng);
 		};
