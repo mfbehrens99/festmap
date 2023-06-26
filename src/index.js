@@ -1,52 +1,7 @@
 import css from './styles/main.css';
 import L from "leaflet";
 import "leaflet.path.drag";
-
-// Utils
-function rotate(x, y, r) {
-	r *= Math.PI / 180.0;
-	return [
-		Math.cos(r) * x - Math.sin(r) * y,
-		Math.sin(r) * x + Math.cos(r) * y
-	];
-}
-
-function calculateRotationAngle(latlngPivot, latlngMouse) {
-	var dx = latlngMouse.lng - latlngPivot.lng;
-	var dy = latlngMouse.lat - latlngPivot.lat;
-	return Math.atan2(dx, dy) * (180 / Math.PI);
-}
-
-function countItems(list) {
-	var count = {};
-  
-	list.forEach(function(item) {
-	  if (count[item]) {
-		count[item]++;
-	  } else {
-		count[item] = 1;
-	  }
-	});
-  
-	return count;
-  }
-
-
-// Convert hex color of form "#000000" to [0, 0, 0]
-function hexToRgb(hex){
-    if (/^#([A-Fa-f0-9]{6})$/.test(hex)) {
-        var c = "0x" + hex.substring(1);
-        return [(c >> 16) & 255, (c >> 8) & 255, c & 255];
-    }
-    return [0, 0, 0];
-}
-
-// Black for bright backgroundColor, white for dark backgroundColor
-function getTextColor(backgroundColor) {
-	var colorArr = hexToRgb(backgroundColor);
-	var colorGrey = (colorArr[0] + colorArr[1] + colorArr[2]) / 3.0;
-	return colorGrey < 100 ? "#fff" : "#000"; // Threshold
-}
+import Utils from "./scripts/utils.js";
 
 
 // Map Items
@@ -274,11 +229,11 @@ class Rectangle extends MapItem {
 			if (e.originalEvent.button == 2) {
 				objects.addRevertStep();
 			}
-			this.startRot = this.rotation - calculateRotationAngle(this.leafletItem.getBounds().getCenter(), e.latlng);
+			this.startRot = this.rotation - Utils.calculateRotationAngle(this.leafletItem.getBounds().getCenter(), e.latlng);
 		};
 		this.mouseMoveHandler = (e) => {
 			if (e.originalEvent.buttons == 2) {
-				this.rotation = (this.startRot + calculateRotationAngle(this.leafletItem.getBounds().getCenter(), e.latlng)) % 360.0;
+				this.rotation = (this.startRot + Utils.calculateRotationAngle(this.leafletItem.getBounds().getCenter(), e.latlng)) % 360.0;
 				this.update();
 			}
 		};
@@ -291,10 +246,10 @@ class Rectangle extends MapItem {
 		const lngLenght = latLenght * Math.cos(this.lat / 180.0 * Math.PI); // Meter
 
 		let points = [
-			rotate(-this.xSize, this.ySize, this.rotation),
-			rotate(this.xSize, this.ySize, this.rotation),
-			rotate(this.xSize, -this.ySize, this.rotation),
-			rotate(-this.xSize, -this.ySize, this.rotation),
+			Utils.rotate(-this.xSize, this.ySize, this.rotation),
+			Utils.rotate(this.xSize, this.ySize, this.rotation),
+			Utils.rotate(this.xSize, -this.ySize, this.rotation),
+			Utils.rotate(-this.xSize, -this.ySize, this.rotation),
 		];
 
 		for (let i = 0; i < 4; ++i) {
@@ -900,7 +855,7 @@ class ItemManager {
 		this.items.forEach((item) => {
 			materials = materials.concat(item.getMaterial());
 		});
-		var materialList = countItems(materials);
+		var materialList = Utils.countItems(materials);
 		var result = "";
 		for (const item in materialList)
 		{
@@ -1074,7 +1029,7 @@ L.Control.ItemAddControl = L.Control.extend({
 			let btn = L.DomUtil.create('button', '', el);
 			var t = document.createTextNode(item.name);
 			btn.style.backgroundColor = item.color;
-			btn.style.color = getTextColor(item.color);
+			btn.style.color = Utils.getTextColor(item.color);
 			btn.appendChild(t);
 			btn.addEventListener("click", (event) => {
 				objects.addRevertStep();
