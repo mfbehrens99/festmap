@@ -18,3 +18,16 @@
 * Mit Import können diese wieder eingelesen werden
 * Die Position wird ebenfalls im Speicherstand abgespeichert
 * Wenn eine Datei mit dem Namen `data.js` existiert wird diese automatisch geladen
+
+## Build from source
+`Node.js` is required for building the project
+
+```git clone https://github.com/mfbehrens99/festmap.git```
+
+```cd festmap```
+
+```npm install```
+
+```npm run build```
+
+Output will be in `/dist` folder
