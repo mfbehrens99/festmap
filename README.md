@@ -30,4 +30,7 @@
 
 ```npm run build```
 
-Output will be in `/dist` folder
+Output will be in `/dist` folder. Only `index.html`, `festmap.js` and `festmap.css` are required.
+
+## Development
+`npm run watch` executes a watch script that rebuilds the code whenever it is changed.
