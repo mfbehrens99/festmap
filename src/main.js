@@ -1,11 +1,10 @@
 import 'leaflet';
-import "leaflet-path-drag";
 import ItemManager from "./scripts/itemmanager.js";
 import "./scripts/controls.js";
 
 
 // Setup Map
-const map = L.map('map').setView([49.02000, 8.42317], 13);
+const map = L.map('map', {editable: true}).setView([49.02000, 8.42317], 13);
 
 // Add Background imagery
 const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
