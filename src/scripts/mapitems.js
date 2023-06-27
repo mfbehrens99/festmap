@@ -401,12 +401,12 @@ export class Path extends MapItem {
 		});
 
 		this.leafletItem.on("editable:editing", this.update.bind(this));
-		this.leafletItem.on("editable:vertex:rawclick", this._onDrawStart.bind(this));
+		this.leafletItem.on("editable:vertex:dragstart", this._onEditStart.bind(this));
 
 		this.leafletItem.on("drag", (e) => {mapItem.update()});
 	};
 
-	_onDrawStart(e) {
+	_onEditStart(e) {
 		this.itemManager.addRevertStep();
 	}
 
