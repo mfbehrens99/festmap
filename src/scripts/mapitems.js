@@ -228,14 +228,14 @@ export class Rectangle extends MapItem {
 		this.leafletItem = L.polygon([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]], { color: data.color, draggable: true });
 	};
 
-	mouseDownHandler(e) {
+	_onMouseDown(e) {
 		if (e.originalEvent.button == 2) {
-			itemManager.addRevertStep();
+			this.itemManager.addRevertStep();
 		}
 		this.startRot = this.rotation - Utils.calculateRotationAngle(this.leafletItem.getBounds().getCenter(), e.latlng);
 	};
 
-	mouseMoveHandler(e) {
+	_onMouseMove(e) {
 		if (e.originalEvent.buttons == 2) {
 			this.rotation = (this.startRot + Utils.calculateRotationAngle(this.leafletItem.getBounds().getCenter(), e.latlng)) % 360.0;
 			this.update();
@@ -276,14 +276,14 @@ export class Rectangle extends MapItem {
 
 	select() {
 		super.select()
-		this.itemManager.map.on('mousedown', this.mouseDownHandler);
-		this.itemManager.map.on('mousemove', this.mouseMoveHandler);
+		this.itemManager.map.on('mousedown', this._onMouseDown.bind(this));
+		this.itemManager.map.on('mousemove', this._onMouseMove.bind(this));
 	}
 
 	deselect() {
 		super.deselect()
-		this.itemManager.map.off('mousedown', this.mouseDownHandler);
-		this.itemManager.map.off('mousemove', this.mouseMoveHandler);
+		this.itemManager.map.off('mousedown', this._onMouseDown);
+		this.itemManager.map.off('mousemove', this._onMouseMove);
 	}
 
 	getInfoBox() {
