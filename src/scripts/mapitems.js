@@ -1,3 +1,6 @@
+import 'leaflet-draw'
+import 'leaflet-path-drag'
+
 import Utils from "./utils.js";
 
 // Map Items
@@ -396,9 +399,15 @@ export class Path extends MapItem {
 			// mapItem.latLngs = mapItem.leafletItem.getLatLngs();
 			// mapItem.update();
 		});
+		this.leafletItem.on("editable:vertex:drag", this.update.bind(this));
+		this.leafletItem.on("editable:editing", this._onDrawStart.bind(this));
 
 		this.leafletItem.on("drag", (e) => {mapItem.update()});
 	};
+
+	_onDrawStart(e) {
+		this.itemManager.addRevertStep();
+	}
 
 	update() {
 		// this.leafletItem.setLatLngs(this.latLngs);
@@ -420,92 +429,12 @@ export class Path extends MapItem {
 	select() {
 		super.select();
 		// Spawn point handlers
-		const mapItem = this;
-		this.markers = [];
-		var latLngs = this.leafletItem.getLatLngs();
-		latLngs.forEach((latLng, i) => {
-			const marker = new L.circleMarker(latLng, {radius: 8, fillOpacity: 1, draggable: true});
-			marker.on("dragstart", (e) => {
-				mapItem.itemManager.addRevertStep();
-			});
-			marker.on("drag", (e) => {
-				mapItem.updatePoint(i, marker.getLatLng())
-			});
-			marker.on("contextmenu", (e) => {
-				mapItem.deletePoint(i);
-			});
-			this.markers.push(marker);
-			marker.addTo(this.itemManager.map);
-		});
-		this.interMarkers = [];
-		for (var i = 0; i < this.markers.length - 1; i++) {
-			var midpoint = L.latLngBounds(latLngs[i], latLngs[i + 1]).getCenter();
-			var marker = new L.circleMarker(midpoint, {color: "green", radius: 4, draggable: true, fillOpacity: 1});
-			const m = marker;
-			const index = i + 1;
-			marker.on("click", (e) => {
-				mapItem.addPoint(index, m.getLatLng());
-			})
-			marker.on("dragstart", (e) => {
-				m.setStyle({color: '#3388ff', radius: 8});
-			});
-			marker.on("dragend", (e) => {
-				mapItem.addPoint(index, m.getLatLng());
-			})
-			this.interMarkers.push(marker);
-			marker.addTo(this.itemManager.map);
-		}
+		this.leafletItem.editing.enable();
 	};
 
 	deselect() {
-		this.markers.forEach((marker) => {
-			marker.removeFrom(this.itemManager.map);
-		});
-		this.markers = [];
-		this.interMarkers.forEach((marker) => {
-			marker.removeFrom(this.itemManager.map);
-		});
-		this.interMarkers = [];
+		this.leafletItem.editing.disable();
 		super.deselect();
-	};
-
-	setPosition(latLng) {
-		var latLngs = this.leafletItem.getLatLngs();
-		var offsetLat = latLng.lat - latLngs[0].lat;
-		var offsetLng = latLng.lng - latLngs[0].lng;
-		latLngs.forEach((l) => {
-			l.lat += offsetLat;
-			l.lng += offsetLng;
-		});
-		this.leafletItem.setLatLngs(latLngs);
-		this.update();
-	};
-
-	addPoint(i, latLng) {
-		this.itemManager.addRevertStep();
-		var latLngs = this.leafletItem.getLatLngs();
-		latLngs.splice(i, 0, latLng);
-		this.leafletItem.setLatLngs(latLngs);
-		this.deselect();
-		this.select();
-		this.update();
-	};
-
-	updatePoint(i, latLng) {
-		var latLngs = this.leafletItem.getLatLngs();
-		latLngs[i] = latLng;
-		this.leafletItem.setLatLngs(latLngs);
-		this.update();
-	};
-
-	deletePoint(i) {
-		this.itemManager.addRevertStep();
-		var latLngs = this.leafletItem.getLatLngs();
-		latLngs.splice(i, 1);
-		this.leafletItem.setLatLngs(latLngs);
-		this.deselect();
-		this.select();
-		this.update();
 	};
 
 	getInfoBox() {
