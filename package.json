@@ -2,12 +2,12 @@
   "name": "festmap",
   "version": "0.1.0",
   "description": "A very lightweight map for planning the layout of events.",
-  "main": "dist/main.js",
+  "main": "dist/festmap.js",
+  "module": "src/main.js",
+  "style": "dist/festmap.css",
   "scripts": {
-    "build": "npm run rollup && npm run uglify",
-    "rollup": "rollup -c",
+    "build": "rollup -c",
     "watch": "rollup -w -c",
-    "uglify": "uglifyjs dist/festmap-src.js -c -m -o dist/festmap.js --source-map filename=dist/festmap.js.map --source-map content=dist/festmap-src.js.map --source-map url=festmap.js.map --comments",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -27,11 +27,14 @@
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-postcss": "^4.0.2",
-    "rollup-plugin-terser": "^7.0.2",
-    "uglify-js": "^3.17.4"
+    "rollup-plugin-terser": "^7.0.2"
   },
   "dependencies": {
     "leaflet": "^1.3.9",
     "leaflet-path-drag": "^1.8.0-beta.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mfbehrens99/festmap.git"
   }
 }
