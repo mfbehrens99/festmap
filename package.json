@@ -6,9 +6,11 @@
   "module": "src/main.js",
   "style": "dist/festmap.css",
   "scripts": {
-    "build": "rollup -c",
-    "watch": "rollup -w -c",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm run clean && rollup -c",
+    "watch": "npm run clean && rollup -w -c",
+    "clean": "rimraf dist",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "keywords": [
     "leaflet",
@@ -20,8 +22,10 @@
   "author": "HaDiKo e.V.",
   "license": "ISC",
   "devDependencies": {
+    "gh-pages": "^5.0.0",
     "postcss-copy": "^7.1.0",
     "postcss-import": "^15.1.0",
+    "rimraf": "^5.0.1",
     "rollup": "^2.79.1",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-copy": "^3.4.0",
