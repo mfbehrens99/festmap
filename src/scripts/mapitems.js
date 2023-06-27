@@ -181,9 +181,9 @@ class MapItem {
 		this.update();
 	};
 	_onInfoBoxCategoryChange(e) {
-		mapItem.itemManager.addRevertStep();
-		mapItem.setCategory(e.target.value);
-		mapItem.update();
+		this.itemManager.addRevertStep();
+		this.setCategory(e.target.value);
+		this.update();
 	};
 	_onInfoBoxColorChange(e) {
 		this.itemManager.addRevertStep();
@@ -206,6 +206,8 @@ export class MarkerItem extends MapItem {
 		super(parent, data);
 		// var icon = new L.icon();
 		this.leafletItem = new L.marker([data.lat, data.lng], {draggable: true});
+
+		// Bind function for rotation
 	};
 
 	getPosition() {
@@ -278,16 +280,19 @@ export class Rectangle extends MapItem {
 	};
 
 	select() {
-		super.select()
-		this.itemManager.map.on('mousedown', this._onMouseDown.bind(this));
-		this.itemManager.map.on('mousemove', this._onMouseMove.bind(this));
-	}
-
-	deselect() {
-		super.deselect()
-		this.itemManager.map.off('mousedown', this._onMouseDown);
-		this.itemManager.map.off('mousemove', this._onMouseMove);
-	}
+		super.select();
+		// This is hacky
+		this._onMouseDownBound = this._onMouseDown.bind(this);
+		this._onMouseMoveBound = this._onMouseMove.bind(this);
+		this.itemManager.map.on('mousedown', this._onMouseDownBound);
+		this.itemManager.map.on('mousemove', this._onMouseMoveBound);
+	  }
+	  
+	  deselect() {
+		super.deselect();
+		this.itemManager.map.off('mousedown', this._onMouseDownBound);
+		this.itemManager.map.off('mousemove', this._onMouseMoveBound);
+	  }
 
 	getInfoBox() {
 		var tbl = super.getInfoBox()
