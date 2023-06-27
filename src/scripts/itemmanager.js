@@ -1,4 +1,4 @@
-import { Rectangle, Circle, Path, Cable, MarkerItems, Socket } from "./mapitems.js";
+import { Rectangle, Circle, Path, Cable, MarkerItem, Socket } from "./mapitems.js";
 
 export default class ItemManager {
 	constructor(map) {

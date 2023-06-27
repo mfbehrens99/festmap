@@ -1,5 +1,4 @@
-import css from './styles/main.css';
-import L from "leaflet";
+import 'leaflet';
 import "leaflet.path.drag";
 import ItemManager from "./scripts/itemmanager.js";
 import "./scripts/controls.js";
