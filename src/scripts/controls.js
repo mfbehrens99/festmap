@@ -3,6 +3,7 @@ import Utils from "./utils.js";
 
 L.Control.ItemAddControl = L.Control.extend({
 	onAdd: function (map) {
+		this.map = map;
 		var el = L.DomUtil.create('div', 'leaflet-bar item-add-control');
 
 		items.forEach((item) => {
@@ -20,19 +21,21 @@ L.Control.ItemAddControl = L.Control.extend({
 			btn.style.backgroundColor = item.color;
 			btn.style.color = Utils.getTextColor(item.color);
 			btn.appendChild(t);
-			btn.addEventListener("click", (event) => {
-				App.itemManager.addRevertStep();
-				let center = map.getCenter();
-				data.lat = center.lat;
-				data.lng = center.lng;
-				App.itemManager.addItem(data);
-			});
+			btn.addEventListener("click", this._onClick.bind(this, data));
 		});
 
 		return el;
 	},
 
-	onRemove: function (map) { }
+	_onClick : function(data, e) {
+		App.itemManager.addRevertStep();
+		let center = this.map.getCenter();
+		data.lat = center.lat;
+		data.lng = center.lng;
+		App.itemManager.addItem(data);
+	},
+
+	onRemove: function (map) {}
 });
 
 L.Control.GitHubControl = L.Control.extend({
@@ -49,89 +52,95 @@ L.Control.GitHubControl = L.Control.extend({
 });
 
 L.Control.ExportControl = L.Control.extend({
+	input_save: null,
 	select_load: null,
 	btn_load: null,
 	btn_delete: null,
 
+	_onBtnImportClick: function(e) {
+		var data = JSON.parse(prompt("Exportierte JSON eingeben!"));
+		App.itemManager.deleteAllItems();
+		App.itemManager.import(data)
+	},
+	_onBtnExportClick: function(e) {
+		var json = App.itemManager.export();
+		window.open("data:text/json;charset=utf-8," + encodeURIComponent(json), "", "_blank");
+	},
+	_onFormLoadSubmit: function(e) {
+		event.preventDefault(); // to prevent page load
+		var saveName = this.select_load.value;
+
+		var jsonRaw = localStorage.getItem(saveName);
+		try {
+			var json = JSON.parse(jsonRaw);
+			if (json != null) {
+				App.itemManager.deleteAllItems();
+				App.itemManager.import(json);
+			} else {
+				throw new SyntaxError("JSON seems to be empty:");
+			}
+		} catch (e) {
+			alert("Save '" + saveName + "' might be corrupted:\n\n" + e.message + "\n\n" + jsonRaw);
+		}
+	},
+	_onFormSaveSubmit: function(e) {
+		event.preventDefault(); // to prevent page load
+		var data = App.itemManager.export();
+		var saveName = this.input_save.value;
+		localStorage.setItem(saveName, data);
+		this.updateLoadSelect();
+		this.select_load.value = saveName
+	},
+	_onBtnDeleteClick: function(e) {
+		let saveName = this.select_load.value;
+		if (confirm("Delete save '" + saveName + "'?")) {
+			localStorage.removeItem(saveName)
+			this.updateLoadSelect();
+		}
+	},
+
 	onAdd: function (map) {
 		var el = L.DomUtil.create('div', 'leaflet-bar export-control');
 
+		// Import & Export
 		L.DomUtil.create('h4', '', el).appendChild(document.createTextNode('Import/Export using text'));
 
 		let form_importExport = L.DomUtil.create('form', '', el);
 		form_importExport.addEventListener("submit", (event) => {
 			event.preventDefault();
 		});
+
 		let btn_import = L.DomUtil.create('button', '', form_importExport);
 		btn_import.appendChild(document.createTextNode('Import'));
-
-		btn_import.addEventListener("click", (event) => {
-			var data = JSON.parse(prompt("Exportierte JSON eingeben!"));
-
-			App.itemManager.deleteAllItems();
-			App.itemManager.import(data)
-		});
+		btn_import.addEventListener("click", this._onBtnImportClick.bind(this));
 
 		let btn_export = L.DomUtil.create('button', '', form_importExport);
 		btn_export.appendChild(document.createTextNode('Export'));
+		btn_export.addEventListener("click", this._onBtnExportClick.bind(this));
 
-		btn_export.addEventListener("click", (event) => {
-			var json = App.itemManager.export();
-			window.open("data:text/json;charset=utf-8," + encodeURIComponent(json), "", "_blank")
-		});
-
+		// Load & Save
 		L.DomUtil.create('h4', '', el).appendChild(document.createTextNode('Load/Save using localStorage'));
 
 		let form_save = L.DomUtil.create('form', '', el);
-		let input_save = L.DomUtil.create('input', '', form_save);
-		input_save.setAttribute("placeholder", "save name")
+		this.input_save = L.DomUtil.create('input', '', form_save);
+		this.input_save.setAttribute("placeholder", "save name")
 		let btn_save = L.DomUtil.create('input', '', form_save);
 		btn_save.setAttribute("type", "submit")
 		btn_save.value = 'Save';
-
-		form_save.addEventListener("submit", (event) => {
-			event.preventDefault(); // to prevent page load
-			var data = App.itemManager.export();
-			var saveName = input_save.value;
-			localStorage.setItem(saveName, data);
-			this.updateLoadSelect();
-			this.select_load.value = saveName
-		});
+		form_save.addEventListener("submit", this._onFormSaveSubmit.bind(this));
 
 		let form_load = L.DomUtil.create('form', '', el);
 		this.select_load = L.DomUtil.create('select', '', form_load);
 		this.btn_load = L.DomUtil.create('input', '', form_load);
 		this.btn_load.setAttribute("type", "submit")
 		this.btn_load.value = 'Load';
-		form_load.addEventListener("submit", (event) => {
-			event.preventDefault(); // to prevent page load
-			var saveName = this.select_load.value;
-
-			var jsonRaw = localStorage.getItem(saveName);
-
-			try {
-				var json = JSON.parse(jsonRaw);
-				if (json != null) {
-					App.itemManager.import(json);
-				} else {
-					throw new SyntaxError("JSON seems to be empty:");
-				}
-			} catch (e) {
-				alert("Save '" + saveName + "' might be corrupted:\n\n" + e.message + "\n\n" + jsonRaw);
-			}
-		});
+		form_load.addEventListener("submit", this._onFormLoadSubmit.bind(this));
 
 
 		this.btn_delete = L.DomUtil.create('button', '', form_load);
 		this.btn_delete.appendChild(document.createTextNode('Delete'));
 
-		this.btn_delete.addEventListener("click", (event) => {
-			saveName = this.select_load.value;
-			if (confirm("Delete save '" + saveName + "'?")) {
-				localStorage.removeItem(saveName)
-				this.updateLoadSelect();
-			}
-		});
+		this.btn_delete.addEventListener("click", this._onBtnDeleteClick.bind(this));
 
 		this.updateLoadSelect();
 		return el;

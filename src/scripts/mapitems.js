@@ -35,37 +35,40 @@ class MapItem {
 			sticky: true,
 		});
 
-		// Dragging
-		const mapItem = this;
-		this.leafletItem.on('dragstart', function (e) {
-			mapItem.itemManager.addRevertStep();
-		});
-		this.leafletItem.on('dragend', function (e) {
-			// Update the item whenever the polygon has been moved
-			var position = mapItem.getPosition();
-			mapItem.lat = position.lat;
-			mapItem.lng = position.lng;
-			mapItem.update();
-		});
-
-		// Selecting
-		this.leafletItem.on('click', function (e) {
-			if (e.originalEvent.ctrlKey) {
-				// Multi select
-				if (mapItem.selected) {
-					mapItem.deselect();
-				} else {
-					mapItem.select();
-				}
-			} else {
-				mapItem.itemManager.deselect();
-				mapItem.select();
-			}
-		});
+		// Attach handlers
+		this.leafletItem.on('dragstart', this._onDragStart.bind(this));
+		this.leafletItem.on('dragend', this._onDragEnd.bind(this));
+		this.leafletItem.on('click', this._onClick.bind(this));
 
 		this.leafletItem.addTo(elem);
 		this.update();
 	};
+
+	_onDragStart(e) {
+		this.itemManager.addRevertStep();
+	};
+
+	_onDragEnd(e) {
+		// Update the item whenever the polygon has been moved
+		var position = this.getPosition();
+		this.lat = position.lat;
+		this.lng = position.lng;
+		this.update();
+	};
+
+	_onClick(e) {
+		if (e.originalEvent.ctrlKey) {
+			// Multi select
+			if (this.selected) {
+				this.deselect();
+			} else {
+				this.select();
+			}
+		} else {
+			this.itemManager.deselect();
+			this.select();
+		}
+	}
 
 	update() {
 		if (this.leafletItem.getTooltip().getContent() != this.name) {
@@ -130,10 +133,9 @@ class MapItem {
 			this.category = category;
 			this.itemManager.addToCategory(this)
 		}
-	}
+	};
 
 	getInfoBox() {
-		const mapItem = this;
 		var tbl = document.createElement('table');
 
 		var row_name = tbl.insertRow();
@@ -143,11 +145,7 @@ class MapItem {
 		var input_name = document.createElement('input');
 		input_name.id = "info_name";
 		input_name.value = this.name;
-		input_name.onchange = function () {
-			mapItem.itemManager.addRevertStep();
-			mapItem.name = this.value;
-			mapItem.update();
-		}
+		input_name.onchange = this._onInfoBoxNameChange.bind(this);
 		name.append(input_name);
 
 		var row_category = tbl.insertRow();
@@ -157,11 +155,7 @@ class MapItem {
 		var input_category = document.createElement('input');
 		input_category.id = "info_category";
 		input_category.value = this.category;
-		input_category.onchange = function () {
-			mapItem.itemManager.addRevertStep();
-			mapItem.setCategory(this.value);
-			mapItem.update();
-		}
+		input_category.onchange = this._onInfoBoxCategoryChange.bind(this);
 		category.append(input_category);
 
 		var row_color = tbl.insertRow();
@@ -172,14 +166,26 @@ class MapItem {
 		input_color.id = "info_name";
 		input_color.type = "color";
 		input_color.value = this.color;
-		input_color.onchange = function () {
-			mapItem.itemManager.addRevertStep();
-			mapItem.color = this.value;
-			mapItem.update();
-		}
+		input_color.onchange = this._onInfoBoxColorChange.bind(this);
 		color.append(input_color);
 
 		return tbl;
+	};
+
+	_onInfoBoxNameChange(e) {
+		this.itemManager.addRevertStep();
+		this.name = e.target.value;
+		this.update();
+	};
+	_onInfoBoxCategoryChange(e) {
+		mapItem.itemManager.addRevertStep();
+		mapItem.setCategory(e.target.value);
+		mapItem.update();
+	};
+	_onInfoBoxColorChange(e) {
+		this.itemManager.addRevertStep();
+		this.color = e.target.value;
+		this.update();
 	};
 
 	getMaterial() {
@@ -220,20 +226,21 @@ export class Rectangle extends MapItem {
 		this.rotation = data.rotation;
 
 		this.leafletItem = L.polygon([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]], { color: data.color, draggable: true });
+	};
 
-		this.mouseDownHandler = (e) => {
-			if (e.originalEvent.button == 2) {
-				itemManager.addRevertStep();
-			}
-			this.startRot = this.rotation - Utils.calculateRotationAngle(this.leafletItem.getBounds().getCenter(), e.latlng);
-		};
-		this.mouseMoveHandler = (e) => {
-			if (e.originalEvent.buttons == 2) {
-				this.rotation = (this.startRot + Utils.calculateRotationAngle(this.leafletItem.getBounds().getCenter(), e.latlng)) % 360.0;
-				this.update();
-			}
-		};
-	}
+	mouseDownHandler(e) {
+		if (e.originalEvent.button == 2) {
+			itemManager.addRevertStep();
+		}
+		this.startRot = this.rotation - Utils.calculateRotationAngle(this.leafletItem.getBounds().getCenter(), e.latlng);
+	};
+
+	mouseMoveHandler(e) {
+		if (e.originalEvent.buttons == 2) {
+			this.rotation = (this.startRot + Utils.calculateRotationAngle(this.leafletItem.getBounds().getCenter(), e.latlng)) % 360.0;
+			this.update();
+		}
+	};
 
 	update() {
 		super.update();
@@ -280,7 +287,6 @@ export class Rectangle extends MapItem {
 	}
 
 	getInfoBox() {
-		const mapItem = this;
 		var tbl = super.getInfoBox()
 
 		var row_size = tbl.insertRow();
@@ -291,25 +297,28 @@ export class Rectangle extends MapItem {
 		input_xSize.type = "number";
 		input_xSize.size = "6"
 		input_xSize.value = this.xSize;
-		input_xSize.onchange = function () {
-			mapItem.itemManager.addRevertStep();
-			mapItem.xSize = this.value;
-			mapItem.update();
-		}
+		input_xSize.onchange = this._onInfoBoxXSizeChange.bind(this);
 		var input_ySize = document.createElement('input');
 		input_ySize.type = "number";
 		input_ySize.size = "6"
 		input_ySize.value = this.ySize;
-		input_ySize.onchange = function () {
-			mapItem.itemManager.addRevertStep();
-			mapItem.ySize = this.value;
-			mapItem.update();
-		}
+		input_ySize.onchange = this._onInfoBoxYSizeChange.bind(this);
 		size.append(input_xSize);
 		size.append(document.createTextNode(" x "));
 		size.append(input_ySize);
 
 		return tbl;
+	};
+
+	_onInfoBoxXSizeChange(e) {
+		this.itemManager.addRevertStep();
+		this.xSize = e.target.value;
+		this.update();
+	};
+	_onInfoBoxYSizeChange(e) {
+		this.itemManager.addRevertStep();
+		this.ySize = e.target.value;
+		this.update();
 	};
 
 };
@@ -349,15 +358,17 @@ export class Circle extends MapItem {
 		var input_radius = document.createElement('input');
 		input_radius.type = "number";
 		input_radius.value = this.radius;
-		input_radius.onchange = function () {
-			mapItem.itemManager.addRevertStep();
-			mapItem.radius = this.value;
-			mapItem.update();
-		}
+		input_radius.onchange = this._onInfoBoxRadiusChange.bind(this);
 
 		radius.append(input_radius);
 
 		return tbl;
+	};
+
+	_onInfoBoxRadiusChange(e) {
+		this.itemManager.addRevertStep();
+		this.radius = e.target.value;
+		this.update();
 	};
 };
 
@@ -541,7 +552,6 @@ export class Cable extends Path {
 	}
 
 	getInfoBox() {
-		const mapItem = this;
 		var tbl = super.getInfoBox()
 
 		var row_length = tbl.insertRow();
@@ -551,11 +561,7 @@ export class Cable extends Path {
 		var input_length = document.createElement('input');
 		input_length.type = "number";
 		input_length.value = this.length;
-		input_length.onchange = function () {
-			mapItem.itemManager.addRevertStep();
-			mapItem.length = this.value;
-			mapItem.update();
-		};
+		input_length.onchange = this._onInfoBoxLengthChange.bind(this);
 		length.append(input_length);
 
 		const currentItems = ["Schuko", "16A", "32A", "63A", "125A"]
@@ -575,15 +581,21 @@ export class Cable extends Path {
 		});
 		// select_current.type = "number";
 		select_current.value = this.current;
-		select_current.onchange = function () {
-			mapItem.itemManager.addRevertStep();
-			mapItem.current = this.value;
-			mapItem.update();
-		};
+		select_current.onchange = this._onInfoBoxCurrentChange.bind(this);
 		current.append(select_current);
 		
-
 		return tbl;
+	};
+
+	_onInfoBoxLengthChange(e) {
+		this.itemManager.addRevertStep();
+		this.length = e.target.value;
+		this.update();
+	};
+	_onInfoBoxCurrentChange(e) {
+		this.itemManager.addRevertStep();
+		this.current = e.target.value;
+		this.update();
 	};
 
 	export() {
