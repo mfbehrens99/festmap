@@ -11,8 +11,7 @@
     "clean": "rimraf dist",
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy": "npm run build && gh-pages -d dist",
-    "start": "web-dev-server --app-index dist/index.html --node-resolve --open --watch",
-    "debug": "concurrently --kill-others --names rollup,web-dev-server \"npm run watch\" \"npm run start\""
+    "start": "concurrently --kill-others --names watch,web-dev-server \"npm run watch\" \"web-dev-server --app-index dist/index.html --node-resolve --open --watch\""
   },
   "keywords": [
     "leaflet",
