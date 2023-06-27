@@ -1,6 +1,7 @@
-# Festmap
+# [Festmap](https://mfbehrens99.github.io/festmap/)
 
-## Benutzung der Karte
+## Tutorial (in German)
+### Benutzung der Karte
 * Mittels des Menüs auf der rechten Seite können Objekte hinzugefügt werden
 * Diese können per Drag-and-drop positioniert werden
 * Jedes Objekt kann durch anklicken ausgewählt werden
@@ -11,7 +12,7 @@
 * `Esc` oder ein Klick auf die Karte wählen ab
 * `Strg+Z` und `Strg+Y` machen rückgängig und wiederholen
 
-## Speichern und Exportieren
+### Speichern und Exportieren
 * Speichern speichert alle Objekte im `localStorage` ab
 * Es kann immer nur einen Speicherstand geben
 * Expotieren gibt alle Objekte als JSON aus
@@ -22,15 +23,20 @@
 ## Build from source
 `Node.js` is required for building the project
 
-```git clone https://github.com/mfbehrens99/festmap.git```
+```
+git clone https://github.com/mfbehrens99/festmap.git
+cd festmap
+npm install
+npm run build
+```
 
-```cd festmap```
+Output will be in `/dist` folder. Only `index.html`, `festmap.js`, `festmap.css` and `/images/*` are required.
 
-```npm install```
-
-```npm run build```
-
-Output will be in `/dist` folder. Only `index.html`, `festmap.js` and `festmap.css` are required.
+`npm run deploy` will push the current state to the gh-pages branch
 
 ## Development
 `npm run watch` executes a watch script that rebuilds the code whenever it is changed.
+
+`npm start` will start the development server.
+
+When running rollup and using the `--watch` option the code will not be minified
