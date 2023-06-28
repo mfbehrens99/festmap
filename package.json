@@ -7,10 +7,11 @@
   "style": "dist/festmap.css",
   "scripts": {
     "build": "npm run clean && rollup -c",
-    "watch": "npm run clean && rollup -w -c",
+    "watch": "rollup -w -c",
     "clean": "rimraf dist",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy": "npm run build && gh-pages -d dist"
+    "deploy": "npm run build && gh-pages -d dist",
+    "start": "concurrently --kill-others --names watch,web-dev-server \"npm run watch\" \"web-dev-server --app-index dist/index.html --node-resolve --open --watch\""
   },
   "keywords": [
     "leaflet",
@@ -22,6 +23,8 @@
   "author": "HaDiKo e.V.",
   "license": "ISC",
   "devDependencies": {
+    "@web/dev-server": "^0.2.3",
+    "concurrently": "^8.2.0",
     "gh-pages": "^5.0.0",
     "postcss-copy": "^7.1.0",
     "postcss-import": "^15.1.0",
