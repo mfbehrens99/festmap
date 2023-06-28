@@ -9,6 +9,7 @@ export default class ItemManager {
 		this.copyItems = null;
 		this.revertSteps = [];
 		this.revertIndex = -1;
+		this.hasUnsavedChanges = false;
 
 		const itemManager = this;
 
@@ -60,6 +61,7 @@ export default class ItemManager {
 				itemManager.getSelected().forEach((item) => {itemManager.deleteItem(item);});
 			}
 		});
+		window.onbeforeunload = this._onBeforeUnload.bind(this);
 	};
 
 	addItem(itemData) {
@@ -219,6 +221,7 @@ export default class ItemManager {
 			this.revertSteps.splice(this.revertSteps.length - this.revertIndex - 1);
 			this.revertIndex = -1;
 		}
+		this.hasUnsavedChanges = true;
 		this.revertSteps.push(this.export('', false));
 		// Maybe limit stack size by calling this.revertSteps.shift() once a certain size has been exceeded
 	};
@@ -257,5 +260,11 @@ export default class ItemManager {
 			result += materialList[item] + "x " + item + "\n";
 		}
 		return result;
+	}
+
+	_onBeforeUnload(e) {
+		if (this.hasUnsavedChanges) {
+			return "You have unsaved changes! Are you sure you want to leave?";
+		}
 	}
 }
