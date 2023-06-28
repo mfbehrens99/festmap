@@ -231,6 +231,9 @@ export class Rectangle extends MapItem {
 		this.rotation = data.rotation;
 
 		this.leafletItem = L.polygon([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]], { color: data.color, draggable: true });
+
+		this._onMouseDown = this._onMouseDown.bind(this);
+		this._onMouseMove = this._onMouseMove.bind(this);
 	};
 
 	_onMouseDown(e) {
@@ -281,17 +284,14 @@ export class Rectangle extends MapItem {
 
 	select() {
 		super.select();
-		// This is hacky
-		this._onMouseDownBound = this._onMouseDown.bind(this);
-		this._onMouseMoveBound = this._onMouseMove.bind(this);
-		this.itemManager.map.on('mousedown', this._onMouseDownBound);
-		this.itemManager.map.on('mousemove', this._onMouseMoveBound);
+		this.itemManager.map.on('mousedown', this._onMouseDown);
+		this.itemManager.map.on('mousemove', this._onMouseMove);
 	  }
 	  
 	  deselect() {
 		super.deselect();
-		this.itemManager.map.off('mousedown', this._onMouseDownBound);
-		this.itemManager.map.off('mousemove', this._onMouseMoveBound);
+		this.itemManager.map.off('mousedown', this._onMouseDown);
+		this.itemManager.map.off('mousemove', this._onMouseMove);
 	  }
 
 	getInfoBox() {
