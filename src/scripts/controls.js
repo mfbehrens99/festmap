@@ -65,6 +65,7 @@ L.Control.ExportControl = L.Control.extend({
 	_onBtnExportClick: function(e) {
 		var json = App.itemManager.export();
 		window.open("data:text/json;charset=utf-8," + encodeURIComponent(json), "", "_blank");
+		App.itemManager.hasUnsavedChanges = false;
 	},
 	_onFormLoadSubmit: function(e) {
 		event.preventDefault(); // to prevent page load
@@ -90,6 +91,7 @@ L.Control.ExportControl = L.Control.extend({
 		localStorage.setItem(saveName, data);
 		this.updateLoadSelect();
 		this.select_load.value = saveName
+		App.itemManager.hasUnsavedChanges = false;
 	},
 	_onBtnDeleteClick: function(e) {
 		let saveName = this.select_load.value;
