@@ -230,7 +230,7 @@ export class Rectangle extends MapItem {
 
 	mouseDownHandler(e) {
 		if (e.originalEvent.button == 2) {
-			itemManager.addRevertStep();
+			this.itemManager.addRevertStep();
 		}
 		this.startRot = this.rotation - Utils.calculateRotationAngle(this.leafletItem.getBounds().getCenter(), e.latlng);
 	};

@@ -9,12 +9,6 @@ html, body {
     max-height: 100%;
 }
 
-.item-add-control {
-    background: #fff;
-    padding: 5px;
-    width: 30%; /* Set a width if needed */
-    display: block; /* Make the buttons appear below each other */
-  }
   
 .export-control {
     background: #fff;
@@ -55,6 +49,19 @@ html, body {
     40%, 80% {transform:rotate(10deg)}
 }
 
+
+.leaflet-sidebar-content > * {
+    padding: 0.5em;
+    display: none;
+}
+.leaflet-sidebar-content > *.active {
+    display: block;
+}
+
+.btn-category {
+    display: block;
+    margin-bottom: 0.5em;
+}
 
 form {
     margin-bottom: 0.5em;
