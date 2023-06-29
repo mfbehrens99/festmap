@@ -8,7 +8,8 @@ export default class SideBar {
 
     tabs = [
         TabAddMapItem,
-        TabExport
+        TabExport,
+        TabHelp
     ];
 
     constructor(map, tabContents) {
@@ -24,7 +25,7 @@ export default class SideBar {
             this.leafletItem.addPanel(new tab(map).getProperties());
         });
         
-        this.leafletItem.open('addMapItem');
+        this.leafletItem.open('help');
     };
 
 };
@@ -219,3 +220,42 @@ class TabExport extends Tab {
         this.btn_delete.disabled = noSaves;
     };
 };
+
+class TabHelp extends Tab {
+    constructor(map) {
+        super(map, {
+            id: 'help',
+            tab: 'Help',
+            title: 'Help',
+        })
+    };
+
+    getContent() {
+        var el = L.DomUtil.create('div');
+
+        el.innerHTML = `
+        <h4>Objekte hinzufügen</h4>
+        <ul>
+            <li>Mittels des Menüs auf der rechten Seite können Objekte hinzugefügt werden</li>
+            <li>Diese können per Drag-and-drop positioniert werden</li>
+            <li>Jedes Objekt kann durch anklicken ausgewählt werden</li>
+            <li>Ein ausgewähltes Objekt kann mit der rechten Maustaste gedreht werden</li>
+            <li>Ein ausgewähltes Objekt kann über die Schaltfläche in der linken unteren Ecke bearbeitet werden</li>
+            <li>\`Entf\` löscht das ausgewählte Objekt </li>
+            <li>\`Strg+C\`, \`Strg+V\` und \`Strg+X\` kopieren, fügen ein und schneiden aus</li>
+            <li>\`Esc\` oder ein Klick auf die Karte wählen ab</li>
+            <li>\`Strg+Z\` und \`Strg+Y\` machen rückgängig und wiederholen</li>
+        </ul>
+        <h4>Speichern & Exportieren</h4>
+        <ul>
+            <li>Speichern speichert alle Objekte im \`localStorage\` ab</li>
+            <li>Es gibt mehrere Speicherstände, die wieder geladen werden können</li>
+            <li>Exportieren gibt alle Objekte als JSON aus</li>
+            <li>Mit Import können diese wieder eingelesen werden</li>
+            <li>Die Position wird ebenfalls im Speicherstand abgespeichert</li>
+        </ul>
+        `;
+
+        return el;
+    };
+}

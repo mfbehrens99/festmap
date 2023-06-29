@@ -51,7 +51,7 @@ html, body {
 
 
 .leaflet-sidebar-content > * {
-    padding: 0.5em;
+    padding: 1em;
     display: none;
 }
 .leaflet-sidebar-content > *.active {
@@ -78,4 +78,8 @@ form > *:last-child {
 
 h4 {
     margin: 0;
+}
+
+ul {
+    padding-left: 1em;
 }
