@@ -54,7 +54,7 @@ class TabAddMapItem extends Tab {
     constructor(map) {
         super(map, {
             id: 'addMapItem',
-            tab: 'Add Item',  
+            tab: '<i class="fa-solid fa-square-plus"></i>',
             title: 'Add Item',
         })
     };
@@ -103,7 +103,7 @@ class TabExport extends Tab {
     constructor(map) {
         super(map, {
             id: 'export',
-            tab: 'Save &amp; Load',
+            tab: '<i class="fa-solid fa-floppy-disk"></i>',
             title: 'Save &amp; Load',
         })
     };
@@ -225,7 +225,7 @@ class TabHelp extends Tab {
     constructor(map) {
         super(map, {
             id: 'help',
-            tab: 'Help',
+            tab: '<i class="fa-solid fa-question"></i>',
             title: 'Help',
         })
     };
