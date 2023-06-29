@@ -25,7 +25,7 @@ export default class SideBar {
             this.leafletItem.addPanel(new tab(map).getProperties());
         });
         
-        this.leafletItem.open('help');
+        this.leafletItem.open('addMapItem');
     };
 
 };
@@ -54,15 +54,30 @@ class TabAddMapItem extends Tab {
     constructor(map) {
         super(map, {
             id: 'addMapItem',
-            tab: '<i class="fa-solid fa-square-plus"></i>',
-            title: 'Add Item',
+            tab: '<i class="fa-solid fa-xl fa-square-plus"></i>',
+            title: 'Objekte hinzufügen',
         })
     };
 
     getContent() {
         var el = L.DomUtil.create('div');
 
+        var heading = L.DomUtil.create('h2');
+        heading.appendChild(document.createTextNode("Objekte hinzufügen"));
+        el.appendChild(heading);
+
+        // sort items with custom compareTo
+        items.sort(this._sortByCategory);
+        var lastCategory = null;
         items.forEach((item) => {
+            
+            // add category heading
+            if (lastCategory != item.category) {
+                var heading_category = L.DomUtil.create('h3', '', el);
+                heading_category.appendChild(document.createTextNode(item.category));
+                lastCategory = item.category;
+            }
+
             const data = {
                 xSize: item.width,
                 ySize: item.height,
@@ -84,6 +99,14 @@ class TabAddMapItem extends Tab {
         return el;
     };
 
+    _sortByCategory(a, b) {
+        let compareCategory = a.category.localeCompare(b.category);
+        if (compareCategory == 0) {
+            return a.name.localeCompare(b.name);
+        }
+        return compareCategory;
+    }
+
      _onClick(data, e) {
         App.itemManager.addRevertStep();
         let center = this.map.getCenter();
@@ -103,8 +126,8 @@ class TabExport extends Tab {
     constructor(map) {
         super(map, {
             id: 'export',
-            tab: '<i class="fa-solid fa-floppy-disk"></i>',
-            title: 'Save &amp; Load',
+            tab: '<i class="fa-solid fa-xl fa-floppy-disk"></i>',
+            title: 'Export',
         })
     };
 
@@ -153,8 +176,12 @@ class TabExport extends Tab {
     getContent (map) {
         var el = L.DomUtil.create('div');
 
+        var heading = L.DomUtil.create('h2');
+        heading.appendChild(document.createTextNode("Export"));
+        el.appendChild(heading);
+
         // Import & Export
-        L.DomUtil.create('h4', '', el).appendChild(document.createTextNode('Import/Export using text'));
+        L.DomUtil.create('h3', '', el).appendChild(document.createTextNode('Import/Export using text'));
 
         let form_importExport = L.DomUtil.create('form', '', el);
         form_importExport.addEventListener("submit", (event) => {
@@ -170,7 +197,7 @@ class TabExport extends Tab {
         btn_export.addEventListener("click", this._onBtnExportClick.bind(this));
 
         // Load & Save
-        L.DomUtil.create('h4', '', el).appendChild(document.createTextNode('Load/Save using localStorage'));
+        L.DomUtil.create('h3', '', el).appendChild(document.createTextNode('Load/Save using localStorage'));
 
         let form_save = L.DomUtil.create('form', '', el);
         this.input_save = L.DomUtil.create('input', '', form_save);
@@ -225,8 +252,8 @@ class TabHelp extends Tab {
     constructor(map) {
         super(map, {
             id: 'help',
-            tab: '<i class="fa-solid fa-question"></i>',
-            title: 'Help',
+            tab: '<i class="fa-solid fa-xl fa-question"></i>',
+            title: 'Hilfe',
         })
     };
 
@@ -234,7 +261,8 @@ class TabHelp extends Tab {
         var el = L.DomUtil.create('div');
 
         el.innerHTML = `
-        <h4>Objekte hinzufügen</h4>
+        <h2>Hilfe</h2>
+        <h3>Objekte hinzufügen</h3>
         <ul>
             <li>Mittels des Menüs auf der rechten Seite können Objekte hinzugefügt werden</li>
             <li>Diese können per Drag-and-drop positioniert werden</li>
@@ -246,7 +274,7 @@ class TabHelp extends Tab {
             <li>\`Esc\` oder ein Klick auf die Karte wählen ab</li>
             <li>\`Strg+Z\` und \`Strg+Y\` machen rückgängig und wiederholen</li>
         </ul>
-        <h4>Speichern & Exportieren</h4>
+        <h3>Speichern & Exportieren</h3>
         <ul>
             <li>Speichern speichert alle Objekte im \`localStorage\` ab</li>
             <li>Es gibt mehrere Speicherstände, die wieder geladen werden können</li>

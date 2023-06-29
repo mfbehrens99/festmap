@@ -9,13 +9,6 @@ html, body {
     max-height: 100%;
 }
 
-  
-.export-control {
-    background: #fff;
-    padding: 5px;
-    display: block; /* Make the buttons appear below each other */
-}
-
 
 .info-box {
     background: #fff;
@@ -64,7 +57,7 @@ html, body {
 }
 
 form {
-    margin-bottom: 0.5em;
+    margin-bottom: 1em;
 }
 form:last-child {
     margin-bottom: 0;
@@ -76,8 +69,12 @@ form > *:last-child {
     margin-right: 0;
 }
 
-h4 {
-    margin: 0;
+
+h2 {
+    margin: 0 0 0.5em 0;
+}
+h3 {
+    margin: 0 0 0.3em 0;
 }
 
 ul {
