@@ -11,17 +11,4 @@ L.Control.GitHubControl = L.Control.extend({
 	},
 
 	onRemove: function (map) { }
-});
-
-
-L.Control.InfoControl = L.Control.extend({
-	onAdd: function (map) {
-		var container = L.DomUtil.create('div', 'leaflet-bar info-box');
-		container.style.display = "none";
-		L.DomEvent.disableClickPropagation(container);
-		L.DomEvent.disableScrollPropagation(container);
-		return container;
-	},
-
-	onRemove: function (map) { }
-});
+});	

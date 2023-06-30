@@ -42,7 +42,6 @@ App.itemManager = new ItemManager(map);
 App.layerControl = L.control.layers(baseMaps, App.itemManager.categoryLayers).addTo(map);
 App.sideBar = new SideBar(map);
 
-App.infoBox = new L.Control.InfoControl({ position: 'bottomleft' }).addTo(map);
 let github = new L.Control.GitHubControl({ position: 'topleft' }).addTo(map);
 
 // if (typeof data !== 'undefined') {

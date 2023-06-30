@@ -5,12 +5,15 @@ import Utils from "./utils.js";
 export default class SideBar {
 
     leafletItem = null;
+    infoTab = null;
 
-    tabs = [
+    TabClasses = [
         TabAddMapItem,
         TabExport,
+        TabInfo,
         TabHelp
     ];
+
 
     constructor(map, tabContents) {
         this.leafletItem = L.control.sidebar({
@@ -21,10 +24,13 @@ export default class SideBar {
         }).addTo(map);
 
         // Iterate tab definitions
-        this.tabs.forEach((tab) => {
-            this.leafletItem.addPanel(new tab(map).getProperties());
+        this.TabClasses.forEach((TabClass) => {
+            var tab = new TabClass(map, this.leafletItem);
+            if (TabClass === TabInfo) {
+                this.infoTab = tab;
+            }
+            this.leafletItem.addPanel(tab.getProperties());
         });
-        
         this.leafletItem.open('addMapItem');
     };
 
@@ -35,8 +41,9 @@ export default class SideBar {
 class Tab {
     map = null;
     properties = null;
-    constructor(map, id, title, icon) {
+    constructor(map, sidebar, id, title, icon) {
         this.map = map;
+        this.sidebar = sidebar;
         this.id = id;
         this.title = title;
         this.icon = icon;
@@ -70,8 +77,8 @@ class Tab {
 }
 
 class TabAddMapItem extends Tab {
-    constructor(map) {
-        super(map, 'addMapItem', 'Objekte hinzufügen', 'fa-square-plus');
+    constructor(map, sidebar) {
+        super(map, sidebar, 'addMapItem', 'Objekte hinzufügen', 'fa-square-plus');
     };
 
     getContent() {
@@ -137,8 +144,8 @@ class TabExport extends Tab {
     btn_load = null;
     btn_delete = null;
 
-    constructor(map) {
-        super(map, 'export', 'Export', 'fa-floppy-disk');
+    constructor(map, sidebar) {
+        super(map, sidebar, 'export', 'Export', 'fa-floppy-disk');
     };
 
     _onBtnImportClick(e) {
@@ -256,9 +263,41 @@ class TabExport extends Tab {
     };
 };
 
+class TabInfo extends Tab {
+    constructor(map, sidebar) {
+        super(map, sidebar, 'info', 'Info', 'fa-circle-info');
+    };
+
+    getContent() {
+        this.el = L.DomUtil.create('div');
+        this.el.appendChild(this.getEmptyContent());
+        return this.el;
+    };
+
+    show(el) {
+        this.el.innerHTML = '';
+        this.el.appendChild(el);
+        this.sidebar.open('info');
+    }
+
+    hide() {
+        this.el.innerHTML = '';
+        this.el.appendChild(this.getEmptyContent());
+        this.sidebar.close('info');
+    }
+
+    getEmptyContent() {
+        var el = L.DomUtil.create('div');
+        el.innerHTML = `
+            Klicke auf ein Map-Objekt um Details anzuzeigen.
+        `;
+        return el;
+    }
+}
+
 class TabHelp extends Tab {
-    constructor(map) {
-        super(map, 'help', 'Hilfe', 'fa-question');
+    constructor(map, sidebar) {
+        super(map, sidebar, 'help', 'Hilfe', 'fa-question');
     };
 
     getContent() {
