@@ -35,9 +35,11 @@ export default class SideBar {
 class Tab {
     map = null;
     properties = null;
-    constructor(map, properties) {
+    constructor(map, id, title, icon) {
         this.map = map;
-        this.properties = properties;
+        this.id = id;
+        this.title = title;
+        this.icon = icon;
     };
 
     getContent() {
@@ -45,26 +47,35 @@ class Tab {
     }
 
     getProperties() {
-        this.properties.pane = this.getContent();
-        return this.properties;
+        // create DOM nodes to add as tab content
+        var container = L.DomUtil.create('div', 'tab-container');
+        
+        // add Heading
+        var heading = L.DomUtil.create('h2', '', container);
+        L.DomUtil.create('i', 'fa-solid fa-xl ' + this.icon, heading);
+        heading.appendChild(document.createTextNode(this.title));
+        
+        // add content specified by concrete Tab
+        var content = L.DomUtil.create('div', 'tab-content', container);
+        content.appendChild(this.getContent());
+
+        // return properties as required by leaflet-sidebar-v2
+        return {
+            id: this.id,
+            title: this.title,
+            tab: '<i class="fa-solid fa-xl ' + this.icon + '"></i>',
+            pane: container
+        };
     }
 }
 
 class TabAddMapItem extends Tab {
     constructor(map) {
-        super(map, {
-            id: 'addMapItem',
-            tab: '<i class="fa-solid fa-xl fa-square-plus"></i>',
-            title: 'Objekte hinzufügen',
-        })
+        super(map, 'addMapItem', 'Objekte hinzufügen', 'fa-square-plus');
     };
 
     getContent() {
         var el = L.DomUtil.create('div');
-
-        var heading = L.DomUtil.create('h2');
-        heading.appendChild(document.createTextNode("Objekte hinzufügen"));
-        el.appendChild(heading);
 
         // sort items with custom compareTo
         items.sort(this._sortByCategory);
@@ -73,6 +84,9 @@ class TabAddMapItem extends Tab {
             
             // add category heading
             if (lastCategory != item.category) {
+                if (lastCategory != null) {
+                    L.DomUtil.create('hr', '', el);
+                }
                 var heading_category = L.DomUtil.create('h3', '', el);
                 heading_category.appendChild(document.createTextNode(item.category));
                 lastCategory = item.category;
@@ -124,11 +138,7 @@ class TabExport extends Tab {
     btn_delete = null;
 
     constructor(map) {
-        super(map, {
-            id: 'export',
-            tab: '<i class="fa-solid fa-xl fa-floppy-disk"></i>',
-            title: 'Export',
-        })
+        super(map, 'export', 'Export', 'fa-floppy-disk');
     };
 
     _onBtnImportClick(e) {
@@ -176,10 +186,6 @@ class TabExport extends Tab {
     getContent (map) {
         var el = L.DomUtil.create('div');
 
-        var heading = L.DomUtil.create('h2');
-        heading.appendChild(document.createTextNode("Export"));
-        el.appendChild(heading);
-
         // Import & Export
         L.DomUtil.create('h3', '', el).appendChild(document.createTextNode('Import/Export using text'));
 
@@ -195,6 +201,8 @@ class TabExport extends Tab {
         let btn_export = L.DomUtil.create('button', '', form_importExport);
         btn_export.appendChild(document.createTextNode('Export'));
         btn_export.addEventListener("click", this._onBtnExportClick.bind(this));
+
+        L.DomUtil.create('hr', '', el);
 
         // Load & Save
         L.DomUtil.create('h3', '', el).appendChild(document.createTextNode('Load/Save using localStorage'));
@@ -250,18 +258,13 @@ class TabExport extends Tab {
 
 class TabHelp extends Tab {
     constructor(map) {
-        super(map, {
-            id: 'help',
-            tab: '<i class="fa-solid fa-xl fa-question"></i>',
-            title: 'Hilfe',
-        })
+        super(map, 'help', 'Hilfe', 'fa-question');
     };
 
     getContent() {
         var el = L.DomUtil.create('div');
 
         el.innerHTML = `
-        <h2>Hilfe</h2>
         <h3>Objekte hinzufügen</h3>
         <ul>
             <li>Mittels des Menüs auf der rechten Seite können Objekte hinzugefügt werden</li>
@@ -274,6 +277,7 @@ class TabHelp extends Tab {
             <li>\`Esc\` oder ein Klick auf die Karte wählen ab</li>
             <li>\`Strg+Z\` und \`Strg+Y\` machen rückgängig und wiederholen</li>
         </ul>
+        <hr />
         <h3>Speichern & Exportieren</h3>
         <ul>
             <li>Speichern speichert alle Objekte im \`localStorage\` ab</li>
