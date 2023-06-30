@@ -1,0 +1,22 @@
+@keyframes octocat-wave {
+    0%, 100% {transform:rotate(0)}
+    20%, 60% {transform:rotate(-25deg)}
+    40%, 80% {transform:rotate(10deg)}
+}
+
+.github-control {
+    overflow: hidden;
+}
+.github svg {
+    fill: #000;
+    border: 0;
+    position: relative;
+    top: -10px;
+    left: -31px;
+}
+.octo-arm {
+    transform-origin: 130px 106px;
+}
+.github:hover .octo-arm {
+    animation: octocat-wave 560ms ease-in-out;
+}

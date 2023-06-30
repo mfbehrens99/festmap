@@ -2,4 +2,9 @@
 @import '@fortawesome/fontawesome-free/css/fontawesome.css';
 @import '@fortawesome/fontawesome-free/css/solid.css';
 @import 'leaflet-sidebar-v2/css/leaflet-sidebar.min.css';
-@import 'karte.css';
+
+@import 'general.css';
+@import 'map.css';
+@import 'github.css';
+@import 'sidebar.css';
+
