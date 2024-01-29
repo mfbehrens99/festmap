@@ -178,9 +178,9 @@ class MapItem {
 		this.update();
 	};
 	_onInfoBoxCategoryChange(e) {
-		mapItem.itemManager.addRevertStep();
-		mapItem.setCategory(e.target.value);
-		mapItem.update();
+		this.itemManager.addRevertStep();
+		this.setCategory(e.target.value);
+		this.update();
 	};
 	_onInfoBoxColorChange(e) {
 		this.itemManager.addRevertStep();
@@ -203,6 +203,8 @@ export class MarkerItem extends MapItem {
 		super(parent, data);
 		// var icon = new L.icon();
 		this.leafletItem = new L.marker([data.lat, data.lng], {draggable: true});
+
+		// Bind function for rotation
 	};
 
 	getPosition() {
@@ -226,16 +228,19 @@ export class Rectangle extends MapItem {
 		this.rotation = data.rotation;
 
 		this.leafletItem = L.polygon([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]], { color: data.color, draggable: true });
+
+		this._onMouseDown = this._onMouseDown.bind(this);
+		this._onMouseMove = this._onMouseMove.bind(this);
 	};
 
-	mouseDownHandler(e) {
+	_onMouseDown(e) {
 		if (e.originalEvent.button == 2) {
-			itemManager.addRevertStep();
+			this.itemManager.addRevertStep();
 		}
 		this.startRot = this.rotation - Utils.calculateRotationAngle(this.leafletItem.getBounds().getCenter(), e.latlng);
 	};
 
-	mouseMoveHandler(e) {
+	_onMouseMove(e) {
 		if (e.originalEvent.buttons == 2) {
 			this.rotation = (this.startRot + Utils.calculateRotationAngle(this.leafletItem.getBounds().getCenter(), e.latlng)) % 360.0;
 			this.update();
@@ -275,16 +280,16 @@ export class Rectangle extends MapItem {
 	};
 
 	select() {
-		super.select()
-		this.itemManager.map.on('mousedown', this.mouseDownHandler);
-		this.itemManager.map.on('mousemove', this.mouseMoveHandler);
-	}
-
-	deselect() {
-		super.deselect()
-		this.itemManager.map.off('mousedown', this.mouseDownHandler);
-		this.itemManager.map.off('mousemove', this.mouseMoveHandler);
-	}
+		super.select();
+		this.itemManager.map.on('mousedown', this._onMouseDown);
+		this.itemManager.map.on('mousemove', this._onMouseMove);
+	  }
+	  
+	  deselect() {
+		super.deselect();
+		this.itemManager.map.off('mousedown', this._onMouseDown);
+		this.itemManager.map.off('mousemove', this._onMouseMove);
+	  }
 
 	getInfoBox() {
 		var tbl = super.getInfoBox()
