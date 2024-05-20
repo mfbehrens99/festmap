@@ -1,5 +1,7 @@
 # [Festmap](https://mfbehrens99.github.io/festmap/)
 
+[HIER](https://mfbehrens99.github.io/festmap/dist) gehts zur Karte
+
 ## Tutorial (in German)
 ### Benutzung der Karte
 * Mittels des Menüs auf der rechten Seite können Objekte hinzugefügt werden
