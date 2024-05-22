@@ -1,0 +1,31 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+form {
+    margin-bottom: 1em;
+}
+form:last-child {
+    margin-bottom: 0;
+}
+form > * {
+    margin-right: 0.5em;
+}
+form > *:last-child {
+    margin-right: 0;
+}
+
+
+h3 {
+    margin: 0 0 0.2em 0;
+}
+
+ul {
+    padding-left: 1em;
+}
+
+hr {
+    border: 1px solid #ddd;
+    margin-block-start: 0.8em;
+    margin-block-end: 0.8em;
+}

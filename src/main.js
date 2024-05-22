@@ -1,6 +1,7 @@
 import 'leaflet';
 import "leaflet-path-drag";
 import ItemManager from "./scripts/itemmanager.js";
+import SideBar from "./scripts/sidebar.js";
 import "./scripts/controls.js";
 
 
@@ -37,11 +38,10 @@ var baseMaps = {
 
 let App = {}
 App.itemManager = new ItemManager(map);
-App.layerControl = L.control.layers(baseMaps, App.itemManager.categoryLayers).addTo(map);
 
-let itemAdd = new L.Control.ItemAddControl({ position: 'topright' }).addTo(map);
-let exportJson = new L.Control.ExportControl({ position: 'topright' }).addTo(map);
-App.infoBox = new L.Control.InfoControl({ position: 'bottomleft' }).addTo(map);
+App.layerControl = L.control.layers(baseMaps, App.itemManager.categoryLayers).addTo(map);
+App.sideBar = new SideBar(map);
+
 let github = new L.Control.GitHubControl({ position: 'topleft' }).addTo(map);
 
 // if (typeof data !== 'undefined') {

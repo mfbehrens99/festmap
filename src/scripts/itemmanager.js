@@ -98,12 +98,12 @@ export default class ItemManager {
 	};
 
 	updateInfobox() {
-		var container = App.infoBox.getContainer();
-		container.innerHTML = '';
+		var container = L.DomUtil.create('div')
 		this.getSelected().forEach((item) => {
 			container.append(item.getInfoBox());
 		})
-		container.style.display = "block";
+
+		App.sideBar.infoTab.show(container);
 	};
 
 	deselect() {
@@ -111,8 +111,7 @@ export default class ItemManager {
 			item.deselect();
 		});
 		// Hide Info Box
-		var container = App.infoBox.getContainer();
-		container.style.display = "none";
+		App.sideBar.infoTab.hide();
 	};
 
 	getSelected() {

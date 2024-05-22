@@ -1,0 +1,44 @@
+/* vars */
+:root {
+    --tab-padding: 11px;
+    --active-color: #0074d9;
+}
+
+
+/* For some weird reason leaflet-sidebar-v2 doesn't do that itself */
+.leaflet-sidebar-content > * {
+    display: none;
+}
+.leaflet-sidebar-content > *.active {
+    display: block;
+}
+
+
+/* Layout */
+.tab-container {
+    border-left: 2px solid #ccc;
+    min-height: 100%;
+}
+.tab-content {
+    padding: var(--tab-padding);
+}
+
+
+/* Heading */
+.tab-container h2 {
+    height: 40px;
+    line-height: 40px;
+    color: #fff;
+    padding-left: var(--tab-padding);
+    box-sizing: border-box;
+    margin: 0;
+}
+.tab-container h2 i {
+    margin-right: var(--tab-padding);
+}
+
+
+/* Color */
+.leaflet-sidebar-tabs > li.active, .leaflet-sidebar-tabs > ul > li.active, .tab-container h2 {
+    background-color: var(--active-color);
+}
